@@ -15,3 +15,10 @@ venv/
 .env
 .vscode/
 
+# emotion artifacts / datasets
+experiments/artifacts/emotion/
+data/emotion/raw/
+data/emotion/*.zip
+data/emotion/*.tar
+data/emotion/*.tar.gz
+data/emotion/*.7z
