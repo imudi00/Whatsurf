@@ -1,50 +1,67 @@
 # pipeline.py
 from keyword_extractor import extract_features
+from preprocessor import preprocess
 from body_depth import compute_body_depth
 from omission_risk import compute_omission_risk
-from llm_features import extract_tone_features 
+from llm_frame import extract_frame
+from llm_logic import extract_logic
+from llm_stance import extract_stance
 
 def analyze_article(text: str, cluster_articles: list[str] = None) -> dict:
-    # Step 1: 키워드 추출
+    # Step 1: 키워드 추출 (NER)
     features = extract_features(text)
-
-    # Step 2: 맥락 피처 (규칙 기반)
+    
+    # Step 2: 구조 분해 (전처리)
+    struct = preprocess(text)
+    
+    # Step 3: 맥락 피처 (규칙 기반, 빠름)
     depth = compute_body_depth(text, features)
-    omission = "low"
-    if cluster_articles:
-        omission = compute_omission_risk(text, cluster_articles, extract_features)
-
-    # Step 3: 논조 피처 (LLM, 단일 호출)
-    tone = extract_tone_features(text, features)
-
+    omission = compute_omission_risk(text, cluster_articles, extract_features) \
+               if cluster_articles else "low"
+    
+    # Step 4: 논조 피처 (LLM, 순서대로 — 앞 결과가 뒤에 맥락으로 전달)
+    frame_result  = extract_frame(struct)
+    logic_result  = extract_logic(struct)
+    stance_result = extract_stance(struct, frame_result["frame"], logic_result["logic"])
+    
     return {
-        #키워드
-        "keywords": features,
-        # 논조
-        "frame": tone["frame"],
-        "logic": tone["logic"],
-        "stance_score": tone["stance_score"],
-        # 맥락
-        "body_depth": depth,
+        # 최종 피처
+        "frame":        frame_result["frame"],
+        "logic":        logic_result["logic"],
+        "stance_score": stance_result["stance_score"],
+        "body_depth":   depth,
         "omission_risk": omission,
-        # 디버깅
-        "_entities": [e['word'] for e in features["entities"][:10]],
+        # 설명 (디버깅/검증용)
+        "_frame_reason":   frame_result.get("reason"),
+        "_logic_reason":   logic_result.get("reason"),
+        "_dominant_tone":  stance_result.get("dominant_tone"),
+        "_key_evidence":   stance_result.get("key_evidence"),
+        "_entities":       [e['word'] for e in features["entities"][:5]],
     }
 
-# 테스트
 if __name__ == "__main__":
-    sample = """
-李, 싱가포르 총리에게 “제가 낚시를” 언급 이유는…
-가포르를 국빈 방문 중인 이재명 대통령은 2일(현지 시간) 로렌스 웡 싱가포르 총리와 오찬을 가졌다.2일 이 대통령의 공식 유튜브 채널에는 “잼며들었웡”이라는 제목의 영상이 올라왔다. 영상에는 이 대통령과 김혜경 여사가 웡 총리 내외와 친교 오찬을 갖는 모습이 담겼다.영상에서 이 대통령은 차량에서 내려 마중 나온 웡 총리와 악수했다. 오찬장으로 이동한 이 대통령과 김 여사는 웡 총리 내외와 싱가포르의 전통 음식인 생선회 샐러드 유생을 함께 비볐다. 유생은 먹는 사람들이 재료 하나씩을 더하며 덕담을 나누는 음식이다.웡 총리는 유생에 대해 “중국의 생선회 샐러드에서 발전이 됐다”고 설명했다. 이어 웡 총리는 이 대통령 부부와 유생을 함께 비비며 “보다 좋은 한국과 싱가포르의 관계를 위하여”라고 말했다. 이 대통령은 “총리님과 영부인님의 행복과 건강을 위하여”라고 화답했다. 이 대통령은 비벼진 유생을 보며 “이거 아주 맛있을 거 같다”고 덧붙였다.이후 이 대통령은 웡 총리에게 “제가 낚시를 좋아한다”고 말했다. ‘어떤 낚시를 좋아하느냐’는 물음엔 “호수 낚시를 좋아한다”고 답했다. 이어 입을 벌린 채 입질을 기다린다며 상황을 재현하기도 했다. 이 대통령은 오찬을 마친 뒤 웡 총리와 악수하며 “자주 보길 바란다”고 말했다.
-"""
+    sample = """"대구·경북 통합해달라"‥그러면 충남·대전은? 외통수 몰린 국민의힘◀ 앵커 ▶
+어제 무제한 토론을 돌연 중단한 국민의힘은 더불어민주당에 대구·경북 행정통합을 요구하고 있는데요.
+하지만 민주당은 대구·경북 통합을 위해서는 충남·대전 통합법 처리에 협조하라며 국민의힘을 압박하고 있습니다.
+이재욱 기자가 보도합니다.
+◀ 리포트 ▶
+대구·경북 통합을 요구하며 무제한 토론을 끝낸 국민의힘.
+민주당을 향해 빨리 법사위를 열어 법안을 처리해 달라고 요구했습니다.
+[송언석/국민의힘 원내대표]
+"오늘이라도 법사위와 원포인트 본회의를 열어서 대구·경북 특별법을 처리할 것을 촉구합니다."
+여당 주도로 전남·광주 통합법만 처리되면서 지역 민심이 이탈할 조짐이 일자, 사실상 백기를 든 셈입니다.
+민주당은 쉽게 내주지 않겠다면서 국민의힘에 두 가지를 요구했습니다.
+대구·경북 통합에 반대했다가 일주일 만에 찬성으로 돌아서며 혼선을 일으킨 데 대해 대국민 사과를 하고, 충남·대전 통합에 대해서도 찬성인지 반대인지 당론을 명확히 하라는 겁니다.
+[한병도/더불어민주당 원내대표]
+"대구·경북에 단일한 의견을 만들어 오고, 대전·충남에 단일한 의견을 만들어 와야 됩니다."
+민주당은 대구·경북 통합 법안 처리를 지렛대 삼아, 내친김에 논의가 지지부진한 충남·대전 통합까지 이뤄내겠다는 심산입니다.
+하지만 국민의힘은 민주당의 요구에 쉽게 응하지 못하고 있습니다.
+가뜩이나 수세에 몰린 상황에서 대국민 사과가 부담스럽고, 자당 출신 시도지사의 의견을 들어 대전·충남 통합에 반대했다가는 지방선거 역풍이 뻔하기 때문입니다.
+여기에 애초 행정 통합의 판을 자신들이 엎은 탓에 대구·경북만 밀어붙이기에도 명분 찾기가 쉽지 않은 상황입니다.
+[정청래/더불어민주당 대표(어제)]
+"대전·충남 통합이 무산되면 그 책임은 100% 국민의힘에게 있다는 사실을 분명히 말씀드립니다."
+오는 6월 지방선거에서 통합선거를 치르려면 대구·경북 행정통합 법안 처리 일정은 매우 촉박한 상황입니다.
+정치적으로 궁지에 몰린 국민의힘이 어떤 선택을 할지 관심이 쏠리고 있습니다. """
+    import json
     result = analyze_article(sample)
-    print(result)
-    # 예상 출력:
-    # {
-    #   "frame": "경제적가치",
-    #   "logic": "파급효과",       ← 전문가 경고 + 파급 설명이 중심
-    #   "stance_score": -0.5,      ← 비판적 논조
-    #   "body_depth": 0.58,
-    #   "omission_risk": "low",
-    #   "_entities": ["산업통상자원부", "한국전력", "소상공인", ...]
-    # }
+    print(json.dumps(result, ensure_ascii=False, indent=2))
