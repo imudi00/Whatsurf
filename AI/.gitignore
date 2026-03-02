@@ -6,3 +6,12 @@ venv/
 .env
 .vscode/
 
+
+__pycache__/
+*.pyc
+experiments/artifacts/
+experiment_log.csv
+venv/
+.env
+.vscode/
+
