@@ -18,6 +18,7 @@ python-dotenv
 pandas
 numpy
 networkx
+preprocessor
 
 # 5. Utility
 tqdm
