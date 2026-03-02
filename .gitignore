@@ -22,3 +22,21 @@ __pycache__/
 # --- AI Settings ---
 # 중간에 작성하면 됨
 # ------------------------
+
+# venv
+venv/
+.venv/
+AI/venv/
+AI/.venv/
+
+# cache
+__pycache__/
+*.pyc
+
+# ide
+.vscode/
+
+# secrets
+.env
+experiment_log.csv
+
