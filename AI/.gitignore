@@ -22,3 +22,6 @@ data/emotion/*.zip
 data/emotion/*.tar
 data/emotion/*.tar.gz
 data/emotion/*.7z
+
+AI_test1/emotion/artifacts/
+experiments/artifacts/
