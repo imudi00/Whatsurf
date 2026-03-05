@@ -18,7 +18,8 @@ sys.path.insert(0, str(SRC))
 # ---------------------------------------------------------------------
 # Imports from our src modules
 # ---------------------------------------------------------------------
-from emotion_datasets import load_emotions_csv, load_loaded_words_csv, load_bias_csvfrom emotion_model import EmotionsService
+from emotion_datasets import load_emotions_csv, load_loaded_words_csv, load_bias_csv
+from emotion_model import EmotionsService
 from loaded_words_detector import detect_loaded_words, mask_loaded_words
 from bias_vector_dual_axis import compute_bias_vector
 
