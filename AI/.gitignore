@@ -1,28 +1,29 @@
-
+# Python cache
 __pycache__/
 *.pyc
-experiments/artifacts/
+
+# Environments / secrets
 venv/
 .env
+
+# IDE
 .vscode/
 
-
-__pycache__/
-*.pyc
+# Experiment outputs
 experiments/artifacts/
 experiment_log.csv
-venv/
-.env
-.vscode/
 
-# emotion artifacts / datasets
-experiments/artifacts/emotion/
+# Legacy emotion paths (old)
+emotion/artifacts/
+AI_test1/emotion/artifacts/
+
+# New emotion test module outputs
+ai_emotion_test/artifacts/
+ai_emotion_test/**/__pycache__/
+
+# Emotion datasets (do not commit large raw archives)
 data/emotion/raw/
 data/emotion/*.zip
 data/emotion/*.tar
 data/emotion/*.tar.gz
 data/emotion/*.7z
-
-AI_test1/emotion/artifacts/
-experiments/artifacts/
-emotion/artifacts/

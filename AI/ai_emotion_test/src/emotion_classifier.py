@@ -29,7 +29,17 @@ class BertEmotionClassifier(nn.Module):
 class EmotionsService:
     def __init__(self, base_model: str = "klue/bert-base", label_list: Optional[List[str]] = None, device: Optional[str] = None):
         self.base_model = base_model
-        self.label_list = label_list or ["anger", "anxiety", "fear", "joy", "neutral", "sadness"]
+        self.label_list = label_list or [
+            "anger",         # 분노
+            "disgust",       # 역겨움
+            "fear",          # 두려움
+            "anticipation",  # 기대
+            "sadness",       # 슬픔
+            "surprise",      # 놀람
+            "prediction",    # 예측
+            "trust",         # 믿음
+            "neutral",       # 중립
+            ]
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = BertEmotionClassifier(base_model, self.label_list).to(self.device)
