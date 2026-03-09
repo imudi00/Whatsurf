@@ -10,14 +10,13 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
-#네이버 뉴스 url 타겟팅 -> 댓글 제대로 됨.
-
-#.env 로드
+#ai 테스트 데이터셋 만들기 위한 코드 - ai_test table 저장
+#언론사명 제외한 뉴스 원문과 댓글 수집만 정상 작동.
+# .env 로드
 load_dotenv()
 
-#경로 설정
+# 경로 및 환경 변수 설정
 SAVE_FOLDER = r"C:\Users\Administrator\Desktop\2026-1\2026-1_CreativeProject\data_log"
-
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 CLIENT_ID = os.getenv("client_id")
@@ -25,11 +24,8 @@ CLIENT_SECRET = os.getenv("client_secret")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-#실험 메모
-COMMIT_MESSAGE = "api 경로추적 방식"
-
 def get_news_id(url):
-    """URL에서 oid와 aid를 추출하여 네이버 댓글용 objectId를 생성"""
+    """URL에서 네이버 댓글용 objectId 추출"""
     try:
         path_parts = urlparse(url).path.split('/')
         params = [p for p in path_parts if p][-2:] 
@@ -38,7 +34,7 @@ def get_news_id(url):
         return ""
 
 def get_naver_comments_http(news_url):
-    """자바스크립트 JSONP 방식을 이식한 초고속 댓글 수집 함수"""
+    """네이버 뉴스 댓글 수집"""
     try:
         object_id = get_news_id(news_url)
         if not object_id: return []
@@ -55,30 +51,28 @@ def get_naver_comments_http(news_url):
         }
 
         response = requests.get(api_url, params=params, headers=headers, timeout=5)
-        
-        # JSONP 응답에서 JSON 추출 (_callback(...); 제거)
         match = re.search(r'_callback\((.*)\);', response.text)
         if not match: return []
         
         data = json.loads(match.group(1))
         if data.get("success"):
             comment_list = data.get("result", {}).get("commentList", [])
+            # 댓글 리스트를 JSONB 형태로 저장하기 위해 리스트 객체 반환
             return [c['contents'].replace("\n", " ").strip() for c in comment_list if 'contents' in c]
         return []
     except:
         return []
 
 def crawl_task(item):
-    """개별 기사를 수집하는 단위 작업 (Thread 기반 병렬 실행)"""
+    """개별 기사를 수집하여 ai_test 테이블 형식으로 변환"""
     url = item.get("link")
-    # 네이버 뉴스 주소 형식만 필터링
     if "n.news.naver.com" not in url and "news.naver.com" not in url:
         return None
 
     title_clean = item.get("title").replace("<b>", "").replace("</b>", "").replace("&quot;", '"').replace("&amp;", "&")
     
     try:
-        #발행일 파싱
+        # 1. 발행일 파싱 (스키마의 'date' 타입에 맞게 YYYY-MM-DD 형식)
         raw_pub_date = item.get("pubDate")
         try:
             clean_date_obj = datetime.strptime(raw_pub_date, "%a, %d %b %Y %H:%M:%S +0900")
@@ -86,36 +80,34 @@ def crawl_task(item):
         except:
             published_date = datetime.now().strftime("%Y-%m-%d")
 
-        #본문 수집 (Trafilatura)
+        # 2. 본문 수집
         downloaded = trafilatura.fetch_url(url)
         body = trafilatura.extract(downloaded, include_comments=False)
         if not body: return None
 
-        #댓글 수집 (HTTP 방식)
+        # 3. 댓글 수집
         comments = get_naver_comments_http(url)
 
+        # ai_test 테이블 스키마에 정확히 매칭되는 데이터 구조
         return {
             "title": title_clean,
-            "url": url,
             "body": body.strip(),
-            "media": "네이버뉴스",
+            "url": url,
             "published": published_date,
-            "comments": comments,
-            "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "cm": COMMIT_MESSAGE
+            "comments": comments  # jsonb 컬럼으로 들어감
         }
     except:
         return None
 
 async def main_crawler(query):
     start_time = time.time()
-    print(f"\n '{query}' 병렬 수집 시작")
+    print(f"\n'{query}' 수집 및 ai_test 테이블 저장 시작")
 
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
     
-    # 201번부터 100개를 가져오도록 설정 (원하시는 구간으로 수정 가능)
+    # 검색 설정
     display_num = 100
-    start_num = 201
+    start_num = 901
     api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query)}&display={display_num}&start={start_num}&sort=sim"
     
     res = requests.get(api_url, headers=headers)
@@ -124,55 +116,34 @@ async def main_crawler(query):
         print("검색 결과가 없습니다.")
         return
 
-    # 병렬 처리 실행 (ThreadPool 활용)
+    # 병렬 처리
     tasks = [asyncio.to_thread(crawl_task, item) for item in items]
     results = await asyncio.gather(*tasks)
 
-    stats = {"saved": 0, "comments": 0, "skipped": 0}
+    stats = {"saved": 0, "skipped": 0}
 
     for res_data in results:
         if res_data:
             try:
-                # URL 중복 체크
-                existing = supabase.table("news").select("id").eq("url", res_data["url"]).execute()
+                # 1. URL 중복 체크 (ai_test 테이블 기준)
+                existing = supabase.table("ai_test").select("id").eq("url", res_data["url"]).execute()
                 if existing.data:
                     stats["skipped"] += 1
                     continue
 
-                # Supabase 저장
-                supabase.table("news").insert([res_data]).execute()
+                # 2. Supabase ai_test 테이블에 저장
+                supabase.table("ai_test").insert([res_data]).execute()
                 stats["saved"] += 1
-                stats["comments"] += len(res_data['comments'])
-                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}... (댓글: {len(res_data['comments'])}개)")
+                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}...")
                 
-                # 테스트를 위해 10개만 저장하고 싶다면 아래 주석 해제
-                # if stats["saved"] >= 10: break
             except Exception as e:
-                print(f" DB 에러: {e}")
+                print(f" ❌ DB 에러: {e}")
         else:
             stats["skipped"] += 1
 
-    # --- [리포트 생성 및 저장] ---
+    # 최종 리포트
     elapsed = time.time() - start_time
-    minutes, seconds = divmod(int(elapsed), 60)
-    now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    report = (
-        f"{'='*50}\n '{query}' 수집 최종 요약 리포트\n{'-'*50}\n"
-        f"총 소요 시간: {minutes}분 {seconds}초\n"
-        f"실행 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"커밋 메시지: {COMMIT_MESSAGE}\n"
-        f"신규 저장: {stats['saved']}개\n"
-        f"스킵/실패: {stats['skipped']}개\n"
-        f"총 댓글 수: {stats['comments']}개\n{'='*50}\n"
-    )
-
-    print("\n" + report)
-
-    if not os.path.exists(SAVE_FOLDER): os.makedirs(SAVE_FOLDER)
-    file_path = os.path.join(SAVE_FOLDER, f"최종리포트_{query}_{now_str}.txt")
-    with open(file_path, "w", encoding="utf-8") as f: f.write(report)
-    print(f"리포트 저장 완료: {file_path}")
+    print(f"\n 완료! {stats['saved']}개 데이터가 'ai_test'에 저장되었습니다. (소요시간: {int(elapsed)}초)")
 
 if __name__ == "__main__":
-    asyncio.run(main_crawler("나경원"))
+    asyncio.run(main_crawler("휘발유"))

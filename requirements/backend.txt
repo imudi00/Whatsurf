@@ -1,4 +1,18 @@
+# 환경변수 로드
 python-dotenv
+
+# HTTP 통신 및 API 호출
 requests
+urllib3
+
+# 본문 및 메타데이터 추출 (lxml-> trafilatura에 필요)
 trafilatura
+lxml
+
+# 데이터베이스 (Supabase 관련)
 supabase
+postgrest
+httpx
+
+# 비동기 및 유틸리티
+asyncio

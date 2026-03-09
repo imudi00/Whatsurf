@@ -10,12 +10,11 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
-#네이버 뉴스 url 타겟팅 -> 댓글 제대로 됨.
 
-#.env 로드
+# .env 로드
 load_dotenv()
 
-#경로 설정
+# 경로 설정 (log 데이터 확인용)
 SAVE_FOLDER = r"C:\Users\Administrator\Desktop\2026-1\2026-1_CreativeProject\data_log"
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -25,11 +24,11 @@ CLIENT_SECRET = os.getenv("client_secret")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-#실험 메모
-COMMIT_MESSAGE = "api 경로추적 방식"
+# 실험 메모 - 버전관리용
+COMMIT_MESSAGE = "1차 버전"
 
 def get_news_id(url):
-    """URL에서 oid와 aid를 추출하여 네이버 댓글용 objectId를 생성"""
+    #URL에서 oid와 aid를 추출하여 네이버 댓글용 objectId를 생성
     try:
         path_parts = urlparse(url).path.split('/')
         params = [p for p in path_parts if p][-2:] 
@@ -38,7 +37,7 @@ def get_news_id(url):
         return ""
 
 def get_naver_comments_http(news_url):
-    """자바스크립트 JSONP 방식을 이식한 초고속 댓글 수집 함수"""
+    #자바스크립트 JSONP 방식을 이식한 초고속 댓글 수집 함수
     try:
         object_id = get_news_id(news_url)
         if not object_id: return []
@@ -56,7 +55,6 @@ def get_naver_comments_http(news_url):
 
         response = requests.get(api_url, params=params, headers=headers, timeout=5)
         
-        # JSONP 응답에서 JSON 추출 (_callback(...); 제거)
         match = re.search(r'_callback\((.*)\);', response.text)
         if not match: return []
         
@@ -69,16 +67,13 @@ def get_naver_comments_http(news_url):
         return []
 
 def crawl_task(item):
-    """개별 기사를 수집하는 단위 작업 (Thread 기반 병렬 실행)"""
-    url = item.get("link")
-    # 네이버 뉴스 주소 형식만 필터링
-    if "n.news.naver.com" not in url and "news.naver.com" not in url:
-        return None
+    #개별 기사를 수집하는 단위 작업 (Thread 기반 병렬 실행)
+    url = item.get("originallink") or item.get("link")
 
     title_clean = item.get("title").replace("<b>", "").replace("</b>", "").replace("&quot;", '"').replace("&amp;", "&")
     
     try:
-        #발행일 파싱
+        # 발행일 파싱
         raw_pub_date = item.get("pubDate")
         try:
             clean_date_obj = datetime.strptime(raw_pub_date, "%a, %d %b %Y %H:%M:%S +0900")
@@ -86,34 +81,41 @@ def crawl_task(item):
         except:
             published_date = datetime.now().strftime("%Y-%m-%d")
 
-        #본문 수집 (Trafilatura)
+        # HTML 다운로드 및 메타데이터/본문 추출
         downloaded = trafilatura.fetch_url(url)
+        if not downloaded: return None
+        
+        # 언론사 정보 추출
+        metadata = trafilatura.extract_metadata(downloaded)
+        media_name = metadata.sitename if metadata and metadata.sitename else urlparse(url).netloc
+        
+        # 본문 추출
         body = trafilatura.extract(downloaded, include_comments=False)
         if not body: return None
 
-        #댓글 수집 (HTTP 방식)
+        # 댓글 수집 (HTTP 역추적 방식)
         comments = get_naver_comments_http(url)
 
         return {
             "title": title_clean,
             "url": url,
             "body": body.strip(),
-            "media": "네이버뉴스",
+            "media": media_name,
             "published": published_date,
             "comments": comments,
             "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "cm": COMMIT_MESSAGE
         }
-    except:
+    except Exception as e:
+        print(f" 개별 태스크 에러 ({url}): {e}")
         return None
 
 async def main_crawler(query):
     start_time = time.time()
-    print(f"\n '{query}' 병렬 수집 시작")
+    print(f"\n '{query}' 수집 시작")
 
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
     
-    # 201번부터 100개를 가져오도록 설정 (원하시는 구간으로 수정 가능)
     display_num = 100
     start_num = 201
     api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query)}&display={display_num}&start={start_num}&sort=sim"
@@ -124,7 +126,7 @@ async def main_crawler(query):
         print("검색 결과가 없습니다.")
         return
 
-    # 병렬 처리 실행 (ThreadPool 활용)
+    # 병렬 처리
     tasks = [asyncio.to_thread(crawl_task, item) for item in items]
     results = await asyncio.gather(*tasks)
 
@@ -143,16 +145,14 @@ async def main_crawler(query):
                 supabase.table("news").insert([res_data]).execute()
                 stats["saved"] += 1
                 stats["comments"] += len(res_data['comments'])
-                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}... (댓글: {len(res_data['comments'])}개)")
+                print(f" ✅ [{stats['saved']}] {res_data['media']} | {res_data['title'][:20]}... (댓글: {len(res_data['comments'])}개)")
                 
-                # 테스트를 위해 10개만 저장하고 싶다면 아래 주석 해제
-                # if stats["saved"] >= 10: break
             except Exception as e:
-                print(f" DB 에러: {e}")
+                print(f" ❌ DB 에러: {e}")
         else:
             stats["skipped"] += 1
 
-    # --- [리포트 생성 및 저장] ---
+    # -------- 로그 생성 및 저장 -------- 
     elapsed = time.time() - start_time
     minutes, seconds = divmod(int(elapsed), 60)
     now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -175,4 +175,4 @@ async def main_crawler(query):
     print(f"리포트 저장 완료: {file_path}")
 
 if __name__ == "__main__":
-    asyncio.run(main_crawler("나경원"))
+    asyncio.run(main_crawler("이재명"))
