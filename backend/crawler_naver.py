@@ -1,7 +1,7 @@
 import os
 import asyncio
 import urllib.parse
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import requests
 import trafilatura
 import time
@@ -11,6 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
 #네이버 뉴스 url 타겟팅 -> 댓글 제대로 됨.
+#언론사까지 id로 추출 완료.. 1차
 
 #.env 로드
 load_dotenv()
@@ -28,17 +29,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 #실험 메모
 COMMIT_MESSAGE = "api 경로추적 방식"
 
-def get_news_id(url):
-    """URL에서 oid와 aid를 추출하여 네이버 댓글용 objectId를 생성"""
-    try:
-        path_parts = urlparse(url).path.split('/')
-        params = [p for p in path_parts if p][-2:] 
-        return f"news{','.join(params)}"
-    except:
-        return ""
-
 def get_naver_comments_http(news_url):
-    """자바스크립트 JSONP 방식을 이식한 초고속 댓글 수집 함수"""
+    """자바스크립트 JSONP 방식 댓글 수집 함수"""
     try:
         object_id = get_news_id(news_url)
         if not object_id: return []
@@ -68,17 +60,51 @@ def get_naver_comments_http(news_url):
     except:
         return []
 
+def extract_oid_from_url(url):
+    """모든 형식의 URL에서 oid만 추출"""
+    try:
+        parsed = urlparse(url)
+        # 1. 쿼리 파라미터 확인 (?oid=...)
+        qs = parse_qs(parsed.query)
+        if 'oid' in qs: return int(qs['oid'][0])
+        
+        # 2. 경로 확인 (/001/...)
+        parts = [p for p in parsed.path.split('/') if p]
+        for i, p in enumerate(parts):
+            if p == 'article' and i + 1 < len(parts):
+                return int(parts[i+1])
+    except:
+        return None
+
+def get_news_id(url):
+    """댓글용 objectId 생성"""
+    oid = extract_oid_from_url(url)
+    # aid는 보통 경로의 맨 마지막 숫자입니다.
+    try:
+        aid = urlparse(url).path.split('/')[-1]
+        if oid and aid:
+            # oid를 3자리 문자열로 맞추기 (예: 1 -> 001)
+            return f"news{str(oid).zfill(3)},{aid}"
+    except:
+        pass
+    return ""
+
 def crawl_task(item):
-    """개별 기사를 수집하는 단위 작업 (Thread 기반 병렬 실행)"""
+    """개별 기사를 수집하는 단위 작업"""
     url = item.get("link")
-    # 네이버 뉴스 주소 형식만 필터링
     if "n.news.naver.com" not in url and "news.naver.com" not in url:
         return None
+
+    # --- 언론사 ID(oid) 추출 추가 ---
+    oid = extract_oid_from_url(url)
+    if oid is None:
+        return None # 언론사 ID를 알 수 없는 기사는 스킵 (선택 사항)
+    # ----------------------------
 
     title_clean = item.get("title").replace("<b>", "").replace("</b>", "").replace("&quot;", '"').replace("&amp;", "&")
     
     try:
-        #발행일 파싱
+        # 발행일 파싱 로직 (기존과 동일)
         raw_pub_date = item.get("pubDate")
         try:
             clean_date_obj = datetime.strptime(raw_pub_date, "%a, %d %b %Y %H:%M:%S +0900")
@@ -86,19 +112,19 @@ def crawl_task(item):
         except:
             published_date = datetime.now().strftime("%Y-%m-%d")
 
-        #본문 수집 (Trafilatura)
+        # 본문 수집 (Trafilatura)
         downloaded = trafilatura.fetch_url(url)
         body = trafilatura.extract(downloaded, include_comments=False)
         if not body: return None
 
-        #댓글 수집 (HTTP 방식)
+        # 댓글 수집
         comments = get_naver_comments_http(url)
 
         return {
             "title": title_clean,
             "url": url,
             "body": body.strip(),
-            "media": "네이버뉴스",
+            "media": oid,  # "네이버뉴스" 대신 정수형 oid 저장
             "published": published_date,
             "comments": comments,
             "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
