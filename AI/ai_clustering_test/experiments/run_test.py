@@ -2,12 +2,11 @@ import time
 import csv
 from datetime import datetime
 
-from src.clustering import print_cluster_samples
-from src.data_loader import load_naver_news
-from src.embedding import sbert_embedding
-from src.tfidf_embedding import tfidf_embedding
-from src.clustering import kmeans_cluster
-from src.evaluation import evaluate_cluster
+from src.clustering.clustering import print_cluster_samples, kmeans_cluster
+from src.clustering.data_loader import load_naver_news
+from src.clustering.embedding import sbert_embedding
+from src.clustering.tfidf_embedding import tfidf_embedding
+from src.clustering.evaluation import evaluate_cluster
 
 
 def save_log(model_name, emb_time, clust_time, score):
@@ -29,7 +28,6 @@ def run_experiment(model_type):
 
     print(f"Running {model_type}...")
 
-    # Embedding
     start = time.time()
 
     if model_type == "SBERT":
@@ -42,7 +40,6 @@ def run_experiment(model_type):
     emb_time = round(time.time() - start, 2)
     print(f"Embedding Time: {emb_time} sec")
 
-    # K 실험 반복
     for k in [5, 10, 15, 20]:
         print(f"\n--- K = {k} ---")
 
