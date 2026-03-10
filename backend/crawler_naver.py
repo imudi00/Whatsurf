@@ -27,7 +27,7 @@ CLIENT_SECRET = os.getenv("client_secret")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 #실험 메모
-COMMIT_MESSAGE = "api 경로추적 방식"
+COMMIT_MESSAGE = "중복 처리"
 
 def get_naver_comments_http(news_url):
     """자바스크립트 JSONP 방식 댓글 수집 함수"""
@@ -60,15 +60,15 @@ def get_naver_comments_http(news_url):
     except:
         return []
 
+#모든 형식의 URL에서 oid 추출
 def extract_oid_from_url(url):
-    """모든 형식의 URL에서 oid만 추출"""
     try:
         parsed = urlparse(url)
-        # 1. 쿼리 파라미터 확인 (?oid=...)
+        #쿼리 파라미터 확인 (?oid=...)
         qs = parse_qs(parsed.query)
         if 'oid' in qs: return int(qs['oid'][0])
         
-        # 2. 경로 확인 (/001/...)
+        #경로 확인 (/001/...)
         parts = [p for p in parsed.path.split('/') if p]
         for i, p in enumerate(parts):
             if p == 'article' and i + 1 < len(parts):
@@ -77,9 +77,10 @@ def extract_oid_from_url(url):
         return None
 
 def get_news_id(url):
-    """댓글용 objectId 생성"""
+    # 댓글용 objectId 생성
     oid = extract_oid_from_url(url)
-    # aid는 보통 경로의 맨 마지막 숫자입니다.
+    
+    # aid는 보통 경로의 맨 마지막 숫자
     try:
         aid = urlparse(url).path.split('/')[-1]
         if oid and aid:
@@ -90,21 +91,20 @@ def get_news_id(url):
     return ""
 
 def crawl_task(item):
-    """개별 기사를 수집하는 단위 작업"""
+    #개별 기사를 수집하는 단위 작업
     url = item.get("link")
     if "n.news.naver.com" not in url and "news.naver.com" not in url:
         return None
 
-    # --- 언론사 ID(oid) 추출 추가 ---
+    #언론사 ID(oid) 추출
     oid = extract_oid_from_url(url)
     if oid is None:
-        return None # 언론사 ID를 알 수 없는 기사는 스킵 (선택 사항)
-    # ----------------------------
+        return None # 언론사 ID를 알 수 없는 기사는 스킵
 
     title_clean = item.get("title").replace("<b>", "").replace("</b>", "").replace("&quot;", '"').replace("&amp;", "&")
     
     try:
-        # 발행일 파싱 로직 (기존과 동일)
+        # 발행일 파싱
         raw_pub_date = item.get("pubDate")
         try:
             clean_date_obj = datetime.strptime(raw_pub_date, "%a, %d %b %Y %H:%M:%S +0900")
@@ -124,7 +124,7 @@ def crawl_task(item):
             "title": title_clean,
             "url": url,
             "body": body.strip(),
-            "media": oid,  # "네이버뉴스" 대신 정수형 oid 저장
+            "media": oid,
             "published": published_date,
             "comments": comments,
             "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -135,11 +135,11 @@ def crawl_task(item):
 
 async def main_crawler(query):
     start_time = time.time()
-    print(f"\n '{query}' 병렬 수집 시작")
+    print(f"\n '{query}' 병렬 수집 및 중복 검사 시작")
 
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
     
-    # 201번부터 100개를 가져오도록 설정 (원하시는 구간으로 수정 가능)
+    # API 설정 (원하는 구간으로 수정 가능)
     display_num = 100
     start_num = 201
     api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query)}&display={display_num}&start={start_num}&sort=sim"
@@ -159,26 +159,36 @@ async def main_crawler(query):
     for res_data in results:
         if res_data:
             try:
-                # URL 중복 체크
-                existing = supabase.table("news").select("id").eq("url", res_data["url"]).execute()
-                if existing.data:
+                # 1. URL 중복 체크 (가장 기본적이고 빠른 체크)
+                existing_url = supabase.table("news").select("id").eq("url", res_data["url"]).execute()
+                if existing_url.data:
                     stats["skipped"] += 1
                     continue
 
-                # Supabase 저장
+                # 2. 제목과 본문이 모두 일치하는 경우 체크
+                duplicate_content = supabase.table("news") \
+                    .select("id") \
+                    .eq("title", res_data["title"]) \
+                    .eq("body", res_data["body"]) \
+                    .execute()
+                
+                if duplicate_content.data:
+                    print(f"중복 기사 스킵(제목/본문 일치): {res_data['title'][:20]}...")
+                    stats["skipped"] += 1
+                    continue
+
+                # 3. 모든 검사 통과 시 Supabase 저장
                 supabase.table("news").insert([res_data]).execute()
                 stats["saved"] += 1
                 stats["comments"] += len(res_data['comments'])
-                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}... (댓글: {len(res_data['comments'])}개)")
+                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}... (OID: {res_data['media']} / 댓글: {len(res_data['comments'])}개)")
                 
-                # 테스트를 위해 10개만 저장하고 싶다면 아래 주석 해제
-                # if stats["saved"] >= 10: break
             except Exception as e:
                 print(f" DB 에러: {e}")
         else:
             stats["skipped"] += 1
 
-    # --- [리포트 생성 및 저장] ---
+    # --- 리포트 생성 및 저장 ---
     elapsed = time.time() - start_time
     minutes, seconds = divmod(int(elapsed), 60)
     now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
