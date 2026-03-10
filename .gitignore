@@ -40,3 +40,5 @@ __pycache__/
 .env
 experiment_log.csv
 
+.venv/
+venv/

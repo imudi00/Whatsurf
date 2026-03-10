@@ -1,9 +1,7 @@
 ﻿from __future__ import annotations
-
-import pandas as pd
 from dataclasses import dataclass
 from typing import List, Optional
-
+from data_load import load_news_df
 
 @dataclass
 class TextLabelDataset:
@@ -12,7 +10,7 @@ class TextLabelDataset:
 
 
 def load_emotions_csv(path: str) -> TextLabelDataset:
-    df = pd.read_csv(path)
+    df = load_news_df()
 
     texts = df["text"].fillna("").astype(str).tolist()
     labels = df["label"].fillna("").astype(str).tolist() if "label" in df.columns else None
@@ -21,8 +19,8 @@ def load_emotions_csv(path: str) -> TextLabelDataset:
 
 
 def load_bias_csv(path: str) -> pd.DataFrame:
-    return pd.read_csv(path)
+    return load_news_df()
 
 
 def load_loaded_words_csv(path: str) -> pd.DataFrame:
-    return pd.read_csv(path)
+    return load_news_df()
