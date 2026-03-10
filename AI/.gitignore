@@ -27,24 +27,3 @@ data/emotion/*.zip
 data/emotion/*.tar
 data/emotion/*.tar.gz
 data/emotion/*.7z
-
-# environment
-.env
-.env.*
-!.env.example
-
-# python
-.venv/
-__pycache__/
-*.py[cod]
-
-# vscode / ide
-.vscode/
-.idea/
-
-.venv/
-venv/
-
-# os
-.DS_Store
-Thumbs.db
