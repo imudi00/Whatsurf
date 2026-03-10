@@ -141,7 +141,7 @@ async def main_crawler(query):
     
     # API 설정 (원하는 구간으로 수정 가능)
     display_num = 100
-    start_num = 201
+    start_num = 1
     api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query)}&display={display_num}&start={start_num}&sort=sim"
     
     res = requests.get(api_url, headers=headers)
@@ -211,4 +211,4 @@ async def main_crawler(query):
     print(f"리포트 저장 완료: {file_path}")
 
 if __name__ == "__main__":
-    asyncio.run(main_crawler("나경원"))
+    asyncio.run(main_crawler("차은우 200억"))
