@@ -1,0 +1,42 @@
+{
+  "query111": "쩝",
+  "burst_dates": [],
+  "timeline": [
+    {
+      "date": "2018-09-01",
+      "importance": 1.0,
+      "summary": "또 다른 기사 본문입니다. 내용이 이어집니다. 두번째 문장입니다.",
+      "representative": {
+        "title": "기사2",
+        "url": "https://example.com/2"
+      },
+      "articles": [
+        {
+          "title": "기사1",
+          "url": "https://example.com/1"
+        },
+        {
+          "title": "기사2",
+          "url": "https://example.com/2"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "date": "2018-09-02",
+      "importance": 0.16666666666666666,
+      "summary": "사건이 발생했습니다. 본문입니다.",
+      "representative": {
+        "title": "기사3",
+        "url": "https://example.com/3"
+      },
+      "articles": [
+        {
+          "title": "기사3",
+          "url": "https://example.com/3"
+        }
+      ],
+      "count": 1
+    }
+  ]
+}
