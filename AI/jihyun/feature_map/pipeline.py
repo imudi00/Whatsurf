@@ -62,6 +62,18 @@ if __name__ == "__main__":
 "대전·충남 통합이 무산되면 그 책임은 100% 국민의힘에게 있다는 사실을 분명히 말씀드립니다."
 오는 6월 지방선거에서 통합선거를 치르려면 대구·경북 행정통합 법안 처리 일정은 매우 촉박한 상황입니다.
 정치적으로 궁지에 몰린 국민의힘이 어떤 선택을 할지 관심이 쏠리고 있습니다. """
-    import json
+    import json, os
+    from datetime import datetime
+
     result = analyze_article(sample)
+
+    save_dir = "file/save/"
+    os.makedirs(save_dir, exist_ok=True)
+    time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    file_name = f"data_{time_stamp}.json"
+    file_path = os.path.join(save_dir, file_name)
+
     print(json.dumps(result, ensure_ascii=False, indent=2))
+    
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
