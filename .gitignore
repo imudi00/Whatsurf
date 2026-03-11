@@ -11,16 +11,14 @@ __pycache__/
 
 # VS Code 설정 폴더
 .vscode/
-# ------------------------
-
-
-# --- frontend Settings ---
-# 중간에 작성하면 됨
-# ------------------------
-
 
 # --- AI Settings ---
-# 중간에 작성하면 됨
-# ------------------------
 file/
 AI/data/
+experiment_log.csv
+
+# venv
+venv/
+.venv/
+AI/venv/
+AI/.venv/
