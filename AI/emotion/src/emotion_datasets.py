@@ -1,8 +1,14 @@
 ﻿from __future__ import annotations
-from dataclasses import dataclass
-from typing import List, Optional
-from data_load import load_news_df
 
+import sys
+from pathlib import Path
+from dataclasses import dataclass
+import pandas as pd
+from typing import List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from common.data_loader import load_news_df
 @dataclass
 class TextLabelDataset:
     texts: List[str]
@@ -12,7 +18,7 @@ class TextLabelDataset:
 def load_emotions_csv(path: str) -> TextLabelDataset:
     df = load_news_df()
 
-    texts = df["text"].fillna("").astype(str).tolist()
+    texts = df["body"].fillna("").astype(str).tolist()
     labels = df["label"].fillna("").astype(str).tolist() if "label" in df.columns else None
 
     return TextLabelDataset(texts=texts, labels=labels)

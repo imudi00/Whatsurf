@@ -2,7 +2,7 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath("."))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.timeline.io_utils import load_news_csv, save_json
 from src.timeline.burst import compute_daily_counts, detect_burst_points
@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
     parser.add_argument("--query", required=True)
-    parser.add_argument("--out_dir", default="experiments/artifacts")
+    parser.add_argument("--out_dir", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")) #timeline 내로 변경
     parser.add_argument("--top_timepoints", type=int, default=8)
     parser.add_argument("--max_eojel", type=int, default=17)
     parser.add_argument("--alpha", type=float, default=0.5)
@@ -41,8 +41,8 @@ def main():
         alpha=args.alpha
     )
 
-    save_json({"query": args.query, "burst_dates": burst_dates, "timeline": timeline},
-              os.path.join(args.out_dir, "timeline.json"))
+    save_json({"query111": args.query, "burst_dates": burst_dates, "timeline": timeline},
+              os.path.join(args.out_dir, "timeline_new.json"))
 
     print("[OK] Saved artifacts to:", args.out_dir)
 

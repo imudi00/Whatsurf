@@ -1,3 +1,10 @@
+# src 경로 설정
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+
 import time
 import csv
 from datetime import datetime

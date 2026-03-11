@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[3]
 ENV_PATH = BASE_DIR / ".env"
 
 load_dotenv(dotenv_path=ENV_PATH)
