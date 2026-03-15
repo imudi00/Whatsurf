@@ -1,7 +1,6 @@
-from src.clustering.embedding import sbert_embedding
-from src.clustering.reducer import reduce_dimension
-from src.clustering.clustering import density_cluster
-
+from AI.clustering.src.clustering.embedding import sbert_embedding
+from AI.clustering.src.clustering.reducer import reduce_dimension
+from AI.clustering.src.clustering.clustering import density_cluster
 
 def run_service_clustering(texts):
     print("Step 1: SBERT Embedding")
