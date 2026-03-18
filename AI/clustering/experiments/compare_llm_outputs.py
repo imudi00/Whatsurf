@@ -39,6 +39,8 @@ def calc_metrics(name: str, data):
             "success_rate": 0.0,
             "avg_headline_len": 0.0,
             "avg_summary_len": 0.0,
+            "avg_elapsed_sec": 0.0,
+            "total_elapsed_sec": 0.0,
         }
 
     results = get_results(data)
@@ -61,13 +63,21 @@ def calc_metrics(name: str, data):
         for r in success_items
         if r.get("summary", "").strip()
     ]
+    elapsed_list = [
+        float(r.get("elapsed_sec", 0.0))
+        for r in results
+        if isinstance(r, dict)
+    ]
 
     avg_headline_len = sum(headline_lens) / len(headline_lens) if headline_lens else 0.0
     avg_summary_len = sum(summary_lens) / len(summary_lens) if summary_lens else 0.0
+    avg_elapsed_sec = sum(elapsed_list) / len(elapsed_list) if elapsed_list else 0.0
 
     model_name = name
+    total_elapsed_sec = 0.0
     if isinstance(data, dict):
         model_name = data.get("model", name)
+        total_elapsed_sec = float(data.get("total_elapsed_sec", 0.0))
 
     return {
         "model_name": model_name,
@@ -78,12 +88,15 @@ def calc_metrics(name: str, data):
         "success_rate": round(success_rate, 2),
         "avg_headline_len": round(avg_headline_len, 2),
         "avg_summary_len": round(avg_summary_len, 2),
+        "avg_elapsed_sec": round(avg_elapsed_sec, 4),
+        "total_elapsed_sec": round(total_elapsed_sec, 4),
     }
 
+
 def print_metrics_table(metrics_list):
-    print("\n" + "=" * 90)
+    print("\n" + "=" * 120)
     print("LLM OUTPUT COMPARISON")
-    print("=" * 90)
+    print("=" * 120)
     print(
         f"{'MODEL':30} "
         f"{'FILE':6} "
@@ -92,9 +105,11 @@ def print_metrics_table(metrics_list):
         f"{'FAIL':6} "
         f"{'RATE(%)':8} "
         f"{'AVG_HEAD':10} "
-        f"{'AVG_SUM':10}"
+        f"{'AVG_SUM':10} "
+        f"{'AVG_T(s)':10} "
+        f"{'TOTAL_T(s)':10}"
     )
-    print("-" * 90)
+    print("-" * 120)
 
     for m in metrics_list:
         print(
@@ -105,13 +120,15 @@ def print_metrics_table(metrics_list):
             f"{m['fail_count']:6} "
             f"{m['success_rate']:8} "
             f"{m['avg_headline_len']:10} "
-            f"{m['avg_summary_len']:10}"
+            f"{m['avg_summary_len']:10} "
+            f"{m['avg_elapsed_sec']:10} "
+            f"{m['total_elapsed_sec']:10}"
         )
 
-    print("=" * 90)
+    print("=" * 120)
 
 
-def print_cluster_previews(label: str, data: dict):
+def print_cluster_previews(label: str, data):
     print(f"\n[{label}]")
     if not data:
         print("파일 없음")
@@ -128,19 +145,21 @@ def print_cluster_previews(label: str, data: dict):
         headline = r.get("headline", "")
         summary = r.get("summary", "")
         error = r.get("error", "")
+        elapsed_sec = r.get("elapsed_sec", 0.0)
 
         print(f"\n- cluster_id: {cluster_id}")
         print(f"  success   : {success}")
         print(f"  headline  : {headline}")
         print(f"  summary   : {summary}")
+        print(f"  elapsed   : {elapsed_sec}s")
         if error:
             print(f"  error     : {error}")
 
 
-def compare_by_cluster(hf_data: dict, ollama_data: dict, gemini_data: dict):
-    print("\n" + "=" * 90)
+def compare_by_cluster(hf_data, ollama_data, gemini_data):
+    print("\n" + "=" * 120)
     print("CLUSTER-BY-CLUSTER COMPARISON")
-    print("=" * 90)
+    print("=" * 120)
 
     sources = {
         "HF": get_results(hf_data),
@@ -166,8 +185,9 @@ def compare_by_cluster(hf_data: dict, ollama_data: dict, gemini_data: dict):
             headline = matched.get("headline", "")
             summary = matched.get("summary", "")
             error = matched.get("error", "")
+            elapsed_sec = matched.get("elapsed_sec", 0.0)
 
-            print(f"  {source_name:8}: success={success}")
+            print(f"  {source_name:8}: success={success}, elapsed={elapsed_sec}s")
             print(f"             headline={headline}")
             print(f"             summary={summary}")
             if error:

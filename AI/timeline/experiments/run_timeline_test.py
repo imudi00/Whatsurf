@@ -3,8 +3,15 @@ import os
 import sys
 import pandas as pd
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))      # C:\...\AI\AI
+PACKAGE_PARENT = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", ".."))  # C:\...\Desktop\AI
+TIMELINE_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))           # C:\...\AI\AI\timeline
 
+for path in [PACKAGE_PARENT, PROJECT_ROOT, TIMELINE_ROOT]:
+    if path not in sys.path:
+        sys.path.append(path)
+        
 from AI.source.data_loader import load_news_df, load_ai_test_df
 from src.timeline.io_utils import save_json
 from src.timeline.burst import compute_daily_counts, detect_burst_points
@@ -56,6 +63,10 @@ def main():
 
     print(f"[INFO] table={args.table}, loaded_rows={len(df)}")
 
+    print(df.columns.tolist())
+    print(df.head(3))
+    print(df[["title", "published"]].head(5))
+    
     # 2) 필수 컬럼 기본 정리
     if "title" not in df.columns:
         df["title"] = ""

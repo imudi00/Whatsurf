@@ -18,10 +18,10 @@ HEADERS = {
 }
 
 INPUT_PATH = Path("./AI/clustering/experiments/artifacts/cluster_kospi_1000/cluster_summary.json")
-OUTPUT_PATH = Path("./AI/clustering/experiments/artifacts/llm_cluster_summary_hf_kospi.json")
+OUTPUT_PATH = Path("./AI/clustering/experiments/llm_results/llm_cluster_summary_hf_kospi.json")
 
 MODEL_NAME = "openai/gpt-oss-20b"
-MAX_CLUSTERS = 4
+MAX_CLUSTERS = 10
 MAX_TITLES_PER_CLUSTER = 5
 REQUEST_TIMEOUT = 60
 SLEEP_SEC = 1.0
@@ -62,13 +62,14 @@ def extract_message_content(response_json: dict) -> str:
 def parse_model_json(text: str) -> dict:
     text = text.strip()
 
-    # 코드블록 제거
     if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[4:].strip()
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
 
-    # JSON 시작~끝 부분만 추출 시도
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end != -1 and start < end:
@@ -85,69 +86,85 @@ def parse_model_json(text: str) -> dict:
         }
 
 
-with open(INPUT_PATH, "r", encoding="utf-8") as f:
-    data = json.load(f)
+def main():
+    with open(INPUT_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-results = []
+    results = []
+    total_start = time.perf_counter()
 
-clusters = data.get("clusters", [])[:MAX_CLUSTERS]
+    clusters = data.get("clusters", [])[:MAX_CLUSTERS]
 
-for cluster in clusters:
-    article_titles = [a["title"] for a in cluster.get("articles", [])[:MAX_TITLES_PER_CLUSTER]]
+    for cluster in clusters:
+        article_titles = [a["title"] for a in cluster.get("articles", [])[:MAX_TITLES_PER_CLUSTER]]
 
-    cluster_input = {
+        cluster_input = {
+            "query": data.get("query", ""),
+            "cluster_id": cluster.get("cluster_id"),
+            "article_count": cluster.get("article_count"),
+            "representative_title": cluster.get("representative_article", {}).get("title", ""),
+            "top_titles": article_titles,
+        }
+
+        result_item = {
+            "cluster_id": cluster.get("cluster_id"),
+            "input": cluster_input,
+            "model": MODEL_NAME,
+            "success": False,
+            "headline": "",
+            "summary": "",
+            "raw_output": "",
+            "error": "",
+            "elapsed_sec": 0.0,
+        }
+
+        start = time.perf_counter()
+
+        try:
+            response_json = call_hf_chat(cluster_input)
+            content = extract_message_content(response_json)
+            parsed = parse_model_json(content)
+
+            result_item["raw_output"] = content
+            result_item["headline"] = parsed.get("headline", "")
+            result_item["summary"] = parsed.get("summary", "")
+            result_item["success"] = not parsed.get("parse_error", False)
+
+            if parsed.get("parse_error", False):
+                result_item["error"] = "모델 응답 JSON 파싱 실패"
+
+        except requests.exceptions.Timeout:
+            result_item["error"] = "요청 시간 초과"
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code if e.response is not None else "unknown"
+            error_text = e.response.text if e.response is not None else str(e)
+            result_item["error"] = f"HTTPError {status_code}: {error_text}"
+        except Exception as e:
+            result_item["error"] = str(e)
+
+        end = time.perf_counter()
+        result_item["elapsed_sec"] = round(end - start, 4)
+
+        results.append(result_item)
+        time.sleep(SLEEP_SEC)
+
+    total_end = time.perf_counter()
+
+    output_data = {
         "query": data.get("query", ""),
-        "cluster_id": cluster.get("cluster_id"),
-        "article_count": cluster.get("article_count"),
-        "representative_title": cluster.get("representative_article", {}).get("title", ""),
-        "top_titles": article_titles,
-    }
-
-    result_item = {
-        "cluster_id": cluster.get("cluster_id"),
-        "input": cluster_input,
         "model": MODEL_NAME,
-        "success": False,
-        "headline": "",
-        "summary": "",
-        "raw_output": "",
-        "error": ""
+        "cluster_count": len(results),
+        "total_elapsed_sec": round(total_end - total_start, 4),
+        "results": results
     }
 
-    try:
-        response_json = call_hf_chat(cluster_input)
-        content = extract_message_content(response_json)
-        parsed = parse_model_json(content)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=2)
 
-        result_item["raw_output"] = content
-        result_item["headline"] = parsed.get("headline", "")
-        result_item["summary"] = parsed.get("summary", "")
-        result_item["success"] = not parsed.get("parse_error", False)
+    print("saved:", OUTPUT_PATH)
+    print("total elapsed:", round(total_end - total_start, 4), "sec")
 
-        if parsed.get("parse_error", False):
-            result_item["error"] = "모델 응답 JSON 파싱 실패"
 
-    except requests.exceptions.Timeout:
-        result_item["error"] = "요청 시간 초과"
-    except requests.exceptions.HTTPError as e:
-        status_code = e.response.status_code if e.response is not None else "unknown"
-        error_text = e.response.text if e.response is not None else str(e)
-        result_item["error"] = f"HTTPError {status_code}: {error_text}"
-    except Exception as e:
-        result_item["error"] = str(e)
-
-    results.append(result_item)
-    time.sleep(SLEEP_SEC)
-
-output_data = {
-    "query": data.get("query", ""),
-    "model": MODEL_NAME,
-    "cluster_count": len(results),
-    "results": results
-}
-
-OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-    json.dump(output_data, f, ensure_ascii=False, indent=2)
-
-print("saved:", OUTPUT_PATH)
+if __name__ == "__main__":
+    main()

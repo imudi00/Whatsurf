@@ -53,3 +53,37 @@ def load_press_df(limit: int | None = None) -> pd.DataFrame:
 
 def load_ai_test_df(limit: int | None = None) -> pd.DataFrame:
     return load_table_as_df("ai_test", limit=limit)
+
+def load_ai_test_body_map_by_ids(article_ids: list[str | int]) -> dict:
+    """
+    ai_test 테이블에서 article_ids에 해당하는 기사들의 id/title/body/published를 조회해서
+    {id: {...}} 형태의 dict로 반환
+    """
+    if not article_ids:
+        return {}
+
+    ids = [str(x) for x in article_ids if str(x).strip()]
+    if not ids:
+        return {}
+
+    response = (
+        supabase
+        .table("ai_test")
+        .select("id,title,body,published")
+        .in_("id", ids)
+        .execute()
+    )
+
+    rows = response.data or []
+    result = {}
+
+    for row in rows:
+        row_id = str(row.get("id"))
+        result[row_id] = {
+            "id": row.get("id"),
+            "title": row.get("title", ""),
+            "body": row.get("body", ""),
+            "published": row.get("published", "")
+        }
+
+    return result

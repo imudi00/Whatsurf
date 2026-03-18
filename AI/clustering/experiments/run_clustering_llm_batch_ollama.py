@@ -7,9 +7,9 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL_NAME = "llama3.2:1b"
 
 INPUT_PATH = Path("./AI/clustering/experiments/artifacts/cluster_kospi_1000/cluster_summary.json")
-OUTPUT_PATH = Path("./AI/clustering/experiments/artifacts/llm_cluster_summary_ollama_kospi.json")
+OUTPUT_PATH = Path("./AI/clustering/experiments/llm_results/llm_cluster_summary_ollama_kospi.json")
 
-MAX_CLUSTERS = 4
+MAX_CLUSTERS = 10
 MAX_TITLES_PER_CLUSTER = 5
 REQUEST_TIMEOUT = 120
 SLEEP_SEC = 0.5
@@ -54,9 +54,12 @@ def parse_model_json(text: str) -> dict:
     text = text.strip()
 
     if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[4:].strip()
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
 
     start = text.find("{")
     end = text.rfind("}")
@@ -79,6 +82,8 @@ def main():
         data = json.load(f)
 
     results = []
+    total_start = time.perf_counter()
+
     clusters = data.get("clusters", [])[:MAX_CLUSTERS]
 
     for cluster in clusters:
@@ -100,8 +105,11 @@ def main():
             "headline": "",
             "summary": "",
             "raw_output": "",
-            "error": ""
+            "error": "",
+            "elapsed_sec": 0.0,
         }
+
+        start = time.perf_counter()
 
         try:
             response_json = call_ollama_chat(cluster_input)
@@ -119,10 +127,7 @@ def main():
         except requests.exceptions.Timeout:
             result_item["error"] = "요청 시간 초과"
         except requests.exceptions.ConnectionError:
-            result_item["error"] = (
-                "Ollama 서버 연결 실패. "
-                "ollama 앱이 실행 중인지, 모델이 pull 되었는지 확인하세요."
-            )
+            result_item["error"] = "Ollama 서버 연결 실패. Ollama 앱 실행 및 모델 pull 여부를 확인하세요."
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code if e.response is not None else "unknown"
             error_text = e.response.text if e.response is not None else str(e)
@@ -130,13 +135,19 @@ def main():
         except Exception as e:
             result_item["error"] = str(e)
 
+        end = time.perf_counter()
+        result_item["elapsed_sec"] = round(end - start, 4)
+
         results.append(result_item)
         time.sleep(SLEEP_SEC)
+
+    total_end = time.perf_counter()
 
     output_data = {
         "query": data.get("query", ""),
         "model": MODEL_NAME,
         "cluster_count": len(results),
+        "total_elapsed_sec": round(total_end - total_start, 4),
         "results": results
     }
 
@@ -145,6 +156,7 @@ def main():
         json.dump(output_data, f, ensure_ascii=False, indent=2)
 
     print("saved:", OUTPUT_PATH)
+    print("total elapsed:", round(total_end - total_start, 4), "sec")
 
 
 if __name__ == "__main__":
