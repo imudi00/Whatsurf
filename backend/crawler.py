@@ -27,7 +27,7 @@ CLIENT_SECRET = os.getenv("client_secret")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 #실험 메모
-COMMIT_MESSAGE = "중복 처리"
+COMMIT_MESSAGE = "댓글 대량수집"
 
 def get_naver_comments_http(news_url):
     """자바스크립트 JSONP 방식 댓글 수집 함수"""
@@ -38,7 +38,7 @@ def get_naver_comments_http(news_url):
         api_url = "https://apis.naver.com/commentBox/cbox/web_naver_list_jsonp.json"
         params = {
             "ticket": "news", "pool": "cbox5", "lang": "ko", "country": "KR",
-            "objectId": object_id, "pageSize": 10, "indexSize": 10,
+            "objectId": object_id, "pageSize": 100, "indexSize": 10,
             "pageType": "more", "page": 1, "sort": "favorite", "callback": "_callback"
         }
         headers = {
