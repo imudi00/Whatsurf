@@ -16,7 +16,7 @@ from supabase import create_client, Client
 #.env 로드
 load_dotenv()
 
-#경로 설정
+#경로 설정... log 저장용. 
 SAVE_FOLDER = r"C:\Users\Administrator\Desktop\2026-1\2026-1_CreativeProject\data_log"
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -104,13 +104,17 @@ def crawl_task(item):
     title_clean = item.get("title").replace("<b>", "").replace("</b>", "").replace("&quot;", '"').replace("&amp;", "&")
     
     try:
-        # 발행일 파싱
+        # 1. 발행일 및 시각 파싱
         raw_pub_date = item.get("pubDate")
         try:
+            # 네이버 RFC822 형식을 datetime 객체로 변환
             clean_date_obj = datetime.strptime(raw_pub_date, "%a, %d %b %Y %H:%M:%S +0900")
-            published_date = clean_date_obj.strftime("%Y-%m-%d")
+            
+            # [수정] %Y-%m-%d 뒤에 %H:%M:%S를 추가하여 시각까지 포함
+            published_at = clean_date_obj.strftime("%Y-%m-%d %H:%M:%S")
         except:
-            published_date = datetime.now().strftime("%Y-%m-%d")
+            # 실패 시 현재 시각 저장
+            published_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # 본문 수집 (Trafilatura)
         downloaded = trafilatura.fetch_url(url)
@@ -119,26 +123,24 @@ def crawl_task(item):
 
         # 댓글 수집
         comments = get_naver_comments_http(url)
-
+        
         return {
             "title": title_clean,
             "url": url,
             "body": body.strip(),
             "media": oid,
-            "published": published_date,
+            "published": published_at, # 이제 시각이 포함됩니다.
             "comments": comments,
             "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "cm": COMMIT_MESSAGE
         }
+        
     except:
         return None
 
 async def main_crawler(query_text, query_id):
     start_time = time.time()
-    print(f"\n🚀 [ID: {query_id}] '{query_text}' 수집 및 DB 저장 시작")
-
-    # 1. ⚠️ 기존에 여기서 하던 supabase.table("queries").insert(...) 로직은 삭제합니다!
-    # app.py에서 이미 저장된 query_id를 인자로 받았기 때문입니다.
+    print(f"\n [ID: {query_id}] '{query_text}' 수집 및 DB 저장 시작")
 
     # 2. 네이버 뉴스 검색 API 호출
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
