@@ -206,4 +206,4 @@ async def main_crawler(query):
     print(f"리포트 저장 완료: {file_path}")
 
 if __name__ == "__main__":
-    asyncio.run(main_crawler("어도어 민희진 갈등"))
+    asyncio.run(main_crawler("연예인 병역특례"))

@@ -133,60 +133,83 @@ def crawl_task(item):
     except:
         return None
 
-async def main_crawler(query):
+async def main_crawler(query_text):
     start_time = time.time()
-    print(f"\n '{query}' 병렬 수집 및 중복 검사 시작")
+    print(f"\n '{query_text}' 수집 및 DB 저장 시작")
+
+    # 1. queries 테이블에 검색어 저장
+    try:
+        query_data = supabase.table("queries").insert({
+            "query_text": query_text,
+            "requested_at": datetime.now().isoformat(),
+            "created_at": datetime.now().isoformat()
+        }).execute()
+        query_id = query_data.data[0]['id']
+    except Exception as e:
+        print(f"쿼리 저장 에러: {e}")
+        return
 
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
-    
-    # API 설정 (원하는 구간으로 수정 가능)
-    display_num = 100
-    start_num = 1
-    api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query)}&display={display_num}&start={start_num}&sort=sim"
+    api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query_text)}&display=100&sort=sim"
     
     res = requests.get(api_url, headers=headers)
     items = res.json().get("items", [])
-    if not items: 
-        print("검색 결과가 없습니다.")
-        return
-
-    # 병렬 처리 실행 (ThreadPool 활용)
+    
     tasks = [asyncio.to_thread(crawl_task, item) for item in items]
     results = await asyncio.gather(*tasks)
 
-    stats = {"saved": 0, "comments": 0, "skipped": 0}
+    stats = {"articles": 0, "comments": 0}
 
     for res_data in results:
-        if res_data:
-            try:
-                # 1. URL 중복 체크 (가장 기본적이고 빠른 체크)
-                existing_url = supabase.table("news").select("id").eq("url", res_data["url"]).execute()
-                if existing_url.data:
-                    stats["skipped"] += 1
-                    continue
+        if not res_data: continue
+            
+        try:
+            # 2. articles 테이블 저장
+            article_payload = {
+                "query_id": query_id,
+                "source_id": res_data["media"],
+                "title": res_data["title"],
+                "body_text": res_data["body"],
+                "url": res_data["url"],
+                "published_at": res_data["published"],
+                "created_at": datetime.now().isoformat(),
+                "cluster_label": None # 명시적 NULL
+            }
 
-                # 2. 제목과 본문이 모두 일치하는 경우 체크
-                duplicate_content = supabase.table("news") \
-                    .select("id") \
-                    .eq("title", res_data["title"]) \
-                    .eq("body", res_data["body"]) \
-                    .execute()
-                
-                if duplicate_content.data:
-                    print(f"중복 기사 스킵(제목/본문 일치): {res_data['title'][:20]}...")
-                    stats["skipped"] += 1
-                    continue
+            # URL 중복 체크
+            existing = supabase.table("articles").select("id").eq("url", res_data["url"]).execute()
+            if existing.data:
+                continue
 
-                # 3. 모든 검사 통과 시 Supabase 저장
-                supabase.table("news").insert([res_data]).execute()
-                stats["saved"] += 1
-                stats["comments"] += len(res_data['comments'])
-                print(f" ✅ [{stats['saved']}] {res_data['title'][:20]}... (OID: {res_data['media']} / 댓글: {len(res_data['comments'])}개)")
+            article_res = supabase.table("articles").insert(article_payload).execute()
+            article_id = article_res.data[0]['id']
+            stats["articles"] += 1
+
+            # 3. comments 테이블에 댓글 개별 저장
+            if res_data["comments"]:
+                comment_payloads = []
+                # enumerate를 사용하여 순서대로 순위 부여 (1위부터 시작)
+                for idx, content in enumerate(res_data["comments"], start=1):
+                    comment_payloads.append({
+                        "article_id": article_id,
+                        "cmt_content": content,
+                        "cmt_rank": idx,
+                        "cmt_emotion": None, # NULL 허용
+                        "cmt_words": None    # NULL 허용
+                    })
                 
-            except Exception as e:
-                print(f" DB 에러: {e}")
-        else:
-            stats["skipped"] += 1
+                # 댓글 대량 삽입 (Bulk Insert)
+                if comment_payloads:
+                    supabase.table("comments").insert(comment_payloads).execute()
+                    stats["comments"] += len(comment_payloads)
+
+            print(f" ✅ [{stats['articles']}] 기사 저장 완료 및 댓글 {len(res_data['comments'])}개 처리")
+
+        except Exception as e:
+            print(f" 저장 중 에러: {e}")
+
+    print(f"\n🚀 작업 완료! 기사: {stats['articles']}개 / 댓글: {stats['comments']}개 저장됨")
+
 
     # --- 리포트 생성 및 저장 ---
     elapsed = time.time() - start_time
@@ -194,21 +217,22 @@ async def main_crawler(query):
     now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     report = (
-        f"{'='*50}\n '{query}' 수집 최종 요약 리포트\n{'-'*50}\n"
+        f"{'='*50}\n '{query_text}' 수집 최종 요약 리포트\n{'-'*50}\n"
         f"총 소요 시간: {minutes}분 {seconds}초\n"
         f"실행 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         f"커밋 메시지: {COMMIT_MESSAGE}\n"
-        f"신규 저장: {stats['saved']}개\n"
-        f"스킵/실패: {stats['skipped']}개\n"
-        f"총 댓글 수: {stats['comments']}개\n{'='*50}\n"
+        f"기사 저장: {stats['articles']}개\n"  # 변수명도 articles로 맞춤
+        f"총 댓글 수: {stats['comments']}개\n"
+        f"{'='*50}\n"
     )
 
     print("\n" + report)
 
     if not os.path.exists(SAVE_FOLDER): os.makedirs(SAVE_FOLDER)
-    file_path = os.path.join(SAVE_FOLDER, f"최종리포트_{query}_{now_str}.txt")
+    # 파일명에도 query_text 적용
+    file_path = os.path.join(SAVE_FOLDER, f"최종리포트_{query_text}_{now_str}.txt")
     with open(file_path, "w", encoding="utf-8") as f: f.write(report)
     print(f"리포트 저장 완료: {file_path}")
 
 if __name__ == "__main__":
-    asyncio.run(main_crawler("차은우 200억"))
+    asyncio.run(main_crawler("의대 증원"))
