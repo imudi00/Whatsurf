@@ -16,3 +16,8 @@ httpx
 
 # 비동기 및 유틸리티
 asyncio
+
+#api
+fastapi
+uvicorn
+pydantic
