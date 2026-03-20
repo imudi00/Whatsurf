@@ -133,38 +133,36 @@ def crawl_task(item):
     except:
         return None
 
-async def main_crawler(query_text):
+async def main_crawler(query_text, query_id):
     start_time = time.time()
-    print(f"\n '{query_text}' 수집 및 DB 저장 시작")
+    print(f"\n🚀 [ID: {query_id}] '{query_text}' 수집 및 DB 저장 시작")
 
-    # 1. queries 테이블에 검색어 저장
-    try:
-        query_data = supabase.table("queries").insert({
-            "query_text": query_text,
-            "requested_at": datetime.now().isoformat(),
-            "created_at": datetime.now().isoformat()
-        }).execute()
-        query_id = query_data.data[0]['id']
-    except Exception as e:
-        print(f"쿼리 저장 에러: {e}")
-        return
+    # 1. ⚠️ 기존에 여기서 하던 supabase.table("queries").insert(...) 로직은 삭제합니다!
+    # app.py에서 이미 저장된 query_id를 인자로 받았기 때문입니다.
 
+    # 2. 네이버 뉴스 검색 API 호출
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
     api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query_text)}&display=100&sort=sim"
     
-    res = requests.get(api_url, headers=headers)
-    items = res.json().get("items", [])
-    
+    try:
+        res = requests.get(api_url, headers=headers)
+        items = res.json().get("items", [])
+    except Exception as e:
+        print(f"네이버 API 호출 에러: {e}")
+        return
+
+    # 3. 비동기로 뉴스 본문 및 댓글 수집
     tasks = [asyncio.to_thread(crawl_task, item) for item in items]
     results = await asyncio.gather(*tasks)
 
     stats = {"articles": 0, "comments": 0}
 
+    # 4. DB 저장 로직
     for res_data in results:
         if not res_data: continue
             
         try:
-            # 2. articles 테이블 저장
+            # articles 테이블 저장 (전달받은 query_id 사용)
             article_payload = {
                 "query_id": query_id,
                 "source_id": res_data["media"],
@@ -173,7 +171,7 @@ async def main_crawler(query_text):
                 "url": res_data["url"],
                 "published_at": res_data["published"],
                 "created_at": datetime.now().isoformat(),
-                "cluster_label": None # 명시적 NULL
+                "cluster_label": None 
             }
 
             # URL 중복 체크
@@ -185,54 +183,47 @@ async def main_crawler(query_text):
             article_id = article_res.data[0]['id']
             stats["articles"] += 1
 
-            # 3. comments 테이블에 댓글 개별 저장
+            # comments 테이블 저장
             if res_data["comments"]:
                 comment_payloads = []
-                # enumerate를 사용하여 순서대로 순위 부여 (1위부터 시작)
                 for idx, content in enumerate(res_data["comments"], start=1):
                     comment_payloads.append({
                         "article_id": article_id,
                         "cmt_content": content,
                         "cmt_rank": idx,
-                        "cmt_emotion": None, # NULL 허용
-                        "cmt_words": None    # NULL 허용
+                        "cmt_emotion": None,
+                        "cmt_words": None
                     })
                 
-                # 댓글 대량 삽입 (Bulk Insert)
                 if comment_payloads:
                     supabase.table("comments").insert(comment_payloads).execute()
                     stats["comments"] += len(comment_payloads)
 
-            print(f" ✅ [{stats['articles']}] 기사 저장 완료 및 댓글 {len(res_data['comments'])}개 처리")
+            print(f" ✅ [{stats['articles']}] 기사 저장 완료 (댓글 {len(res_data['comments'])}개)")
 
         except Exception as e:
             print(f" 저장 중 에러: {e}")
 
-    print(f"\n🚀 작업 완료! 기사: {stats['articles']}개 / 댓글: {stats['comments']}개 저장됨")
-
-
-    # --- 리포트 생성 및 저장 ---
+    # 5. 리포트 생성 및 저장
     elapsed = time.time() - start_time
     minutes, seconds = divmod(int(elapsed), 60)
     now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     report = (
         f"{'='*50}\n '{query_text}' 수집 최종 요약 리포트\n{'-'*50}\n"
+        f"쿼리 ID: {query_id}\n"
         f"총 소요 시간: {minutes}분 {seconds}초\n"
-        f"실행 시각: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"커밋 메시지: {COMMIT_MESSAGE}\n"
-        f"기사 저장: {stats['articles']}개\n"  # 변수명도 articles로 맞춤
-        f"총 댓글 수: {stats['comments']}개\n"
+        f"기사 저장: {stats['articles']}개 / 댓글: {stats['comments']}개\n"
         f"{'='*50}\n"
     )
-
     print("\n" + report)
 
     if not os.path.exists(SAVE_FOLDER): os.makedirs(SAVE_FOLDER)
-    # 파일명에도 query_text 적용
-    file_path = os.path.join(SAVE_FOLDER, f"최종리포트_{query_text}_{now_str}.txt")
+    file_path = os.path.join(SAVE_FOLDER, f"리포트_{query_text}_{now_str}.txt")
     with open(file_path, "w", encoding="utf-8") as f: f.write(report)
-    print(f"리포트 저장 완료: {file_path}")
 
+# --- 파일 맨 마지막 줄 ---
 if __name__ == "__main__":
-    asyncio.run(main_crawler("의대 증원"))
+    # 터미널에서 직접 실행할 때만 동작 (테스트용)
+    # 실제 서버 운영시에는 app.py가 이 함수를 호출하므로 이 부분은 실행되지 않음
+    asyncio.run(main_crawler("의대 증원", query_id=1))

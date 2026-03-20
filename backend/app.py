@@ -1,10 +1,13 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
+
+#crawler.py에서 main_crawler 함수를 가져옵니다.
+from crawler import main_crawler
 
 load_dotenv()
 
@@ -23,17 +26,35 @@ class QueryRequest(BaseModel):
 
 # 1. 검색어 입력 및 쿼리 ID 생성 [cite: 3]
 @app.post("/api/queries")
-async def create_query(request: QueryRequest):
+async def create_query(request: QueryRequest, background_tasks: BackgroundTasks):
     try:
-        data = supabase.table("queries").insert({
+        # 1. [DB 저장] queries 테이블에 먼저 데이터를 넣어서 'id'를 발급받습니다.
+        query_data = supabase.table("queries").insert({
             "query_text": request.query_text,
             "requested_at": datetime.now().isoformat(),
             "created_at": datetime.now().isoformat()
         }).execute()
         
-        return {"status": "success", "data": data.data[0]}
+        # 발급된 ID와 검색어 추출
+        query_id = query_data.data[0]['id']
+        query_text = query_data.data[0]['query_text']
+
+        # 2. [크롤러 호출] 발급받은 query_id를 크롤러에게 넘겨줍니다.
+        # 이제 crawler.py의 main_crawler는 이 ID를 사용해 기사를 저장합니다.
+        background_tasks.add_task(main_crawler, query_text, query_id)
+        
+        # 3. [응답] 사용자에게는 바로 ID를 돌려줍니다. (수집은 백그라운드에서 진행)
+        return {
+            "status": "success", 
+            "data": {
+                "id": query_id,
+                "query_text": query_text,
+                "message": "수집 및 분석이 시작되었습니다."
+            }
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="쿼리 생성 및 크롤러 시작 실패")
 
 # 2. 클러스터 목록 조회 (vw_cluster_list 활용) [cite: 3]
 @app.get("/api/queries/{query_id}/clusters")
