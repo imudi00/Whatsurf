@@ -40,3 +40,4 @@ data/emotion/*.zip
 data/emotion/*.tar
 data/emotion/*.tar.gz
 data/emotion/*.7z
+label_results/
