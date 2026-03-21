@@ -1,19 +1,24 @@
 # experiments/run_emotion_test.py
 """
-감정 피처 실험 실행 스크립트
+감정 피처 실험 실행 스크립트 (Supabase 연동)
 사용법:
-    python run_emotion_test.py --input data_samples/emotions_9class_sample.csv
+    python run_emotion_test.py
+    python run_emotion_test.py --limit 10
 """
 import argparse
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# experiments/ 기준: ../..  → feature_map/ (source이 feature_map 안일 때)
+# experiments/ 기준: ../../.. → 프로젝트 루트 (source이 feature_map과 같은 레벨일 때)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 
-from src.feature_map.io_utils import load_emotions_csv, save_json
+from src.feature_map.io_utils import save_json
 from src.feature_map.emotion_model import EmotionService
 from src.feature_map.loaded_words import detect_loaded_words, loaded_word_density
 from src.feature_map.bias_vector import compute_bias_vector, normalize_bias_vector
+from source.data_loader import load_ai_test_df
 
 
 def run_emotion_pipeline(texts: list, service: EmotionService) -> list:
@@ -57,7 +62,7 @@ def run_bias_vector_pipeline(texts: list) -> list:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", required=True, help="감정 레이블 CSV 경로")
+    parser.add_argument("--limit", type=int, default=10, help="Supabase에서 가져올 기사 수 (기본: 10)")
     parser.add_argument(
         "--out_dir",
         default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts"),
@@ -66,9 +71,12 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
 
-    # 데이터 로드
-    dataset = load_emotions_csv(args.input)
-    texts = dataset.texts[:50]  # 실험용 샘플 제한
+    # Supabase에서 데이터 로드
+    print(f"[Supabase] news 테이블에서 {args.limit}개 로드 중...")
+    df = load_ai_test_df(limit=args.limit)
+    print(f"[Supabase] 로드 완료: {len(df)}행, 컬럼: {list(df.columns)}")
+
+    texts = df["body"].fillna("").astype(str).tolist()
 
     # 감정 분류
     service = EmotionService()
