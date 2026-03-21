@@ -1,0 +1,8 @@
+{
+  "table": "ai_test",
+  "query": "지방선거",
+  "article_count": 21,
+  "cluster_count": 0,
+  "noise_count": 21,
+  "clusters": []
+}

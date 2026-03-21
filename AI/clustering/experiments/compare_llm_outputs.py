@@ -216,3 +216,67 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# LLM 자동성능 평가 규칙 기반 평가    
+def headline_length_ok(headline: str) -> bool:
+    return 8 <= len(headline.strip()) <= 40
+
+
+def summary_length_ok(summary: str) -> bool:
+    return 30 <= len(summary.strip()) <= 300
+
+
+def text_redundancy_score(text: str) -> float:
+    words = normalize_text(text).split()
+    if not words:
+        return 0.0
+    unique_ratio = len(set(words)) / len(words)
+    return round(1 - unique_ratio, 4)
+
+
+def headline_relevance_score(headline: str, input_titles: list[str]) -> float:
+    if not headline or not input_titles:
+        return 0.0
+    context = " ".join(input_titles)
+    return round(jaccard_similarity(headline, context), 4)
+
+
+def summary_relevance_score(summary: str, key_sentences: list[str]) -> float:
+    if not summary or not key_sentences:
+        return 0.0
+    context = " ".join(key_sentences)
+    return round(jaccard_similarity(summary, context), 4)
+
+#LLM judge 방식
+def build_judge_prompt(item: dict) -> str:
+    return f"""
+너는 뉴스 클러스터 요약 품질 평가자다.
+
+다음 기준으로 1~5점으로 평가하라.
+반드시 JSON만 출력하라.
+
+평가 기준:
+1. representativeness: headline이 클러스터 전체를 잘 대표하는가
+2. summary_quality: summary가 핵심 내용을 잘 담는가
+3. conciseness: 불필요한 내용 없이 간결한가
+4. naturalness: 문장이 자연스러운가
+
+출력 형식:
+{{
+  "representativeness": 0,
+  "summary_quality": 0,
+  "conciseness": 0,
+  "naturalness": 0,
+  "total": 0,
+  "comment": ""
+}}
+
+입력 데이터:
+대표 제목: {item["input"].get("representative_title", "")}
+기사 제목: {item["input"].get("titles", [])}
+핵심 문장: {item["input"].get("key_sentences", [])}
+
+생성 headline: {item.get("generated_headline", "")}
+생성 summary: {item.get("generated_summary", "")}
+"""

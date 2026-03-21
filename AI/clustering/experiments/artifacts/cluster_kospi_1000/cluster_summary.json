@@ -1,0 +1,306 @@
+{
+  "table": "ai_test",
+  "query": "코스피 전망",
+  "article_count": 109,
+  "cluster_count": 3,
+  "noise_count": 67,
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "article_count": 11,
+      "title": "'16만전자·81만닉스'…\"들어갈까 말까\" 고민하는 개미들",
+      "summary": "관련 기사: “삼전·SK하닉 어떡해요”...이란 공습에 코스피 ‘출렁’ / 삼성전자, 4거래일 만에 19만원대 후퇴…9%대 급락[핫종목] / [특징주] 이란 사태에 삼성전자 20만원·SK하이닉스 100만원 깨져",
+      "representative_article": {
+        "id": "106",
+        "title": "'16만전자·81만닉스'…\"들어갈까 말까\" 고민하는 개미들",
+        "url": "https://n.news.naver.com/mnews/article/003/0013811455?sid=101",
+        "published": "2026-03-10T07:00:00"
+      },
+      "top_publishers": [],
+      "articles": [
+        {
+          "id": "505",
+          "title": "“삼전·SK하닉 어떡해요”...이란 공습에 코스피 ‘출렁’",
+          "url": "https://n.news.naver.com/mnews/article/024/0000103810?sid=101",
+          "published": "2026-03-03T13:41:00"
+        },
+        {
+          "id": "376",
+          "title": "삼성전자, 4거래일 만에 19만원대 후퇴…9%대 급락[핫종목]",
+          "url": "https://n.news.naver.com/mnews/article/421/0008803217?sid=101",
+          "published": "2026-03-03T14:19:00"
+        },
+        {
+          "id": "257",
+          "title": "[특징주] 이란 사태에 삼성전자 20만원·SK하이닉스 100만원 깨져",
+          "url": "https://n.news.naver.com/mnews/article/001/0015934668?sid=105",
+          "published": "2026-03-03T14:22:00"
+        },
+        {
+          "id": "276",
+          "title": "'20만전자'-'100만닉스' 내줬지만…목표가는 '줄상향'",
+          "url": "https://n.news.naver.com/mnews/article/215/0001243677?sid=101",
+          "published": "2026-03-03T14:39:00"
+        },
+        {
+          "id": "267",
+          "title": "[특징주] 이란사태발 코스피 급락에 '20만전자·100만닉스'도 깨져(종합...",
+          "url": "https://n.news.naver.com/mnews/article/001/0015935062?sid=105",
+          "published": "2026-03-03T15:42:00"
+        },
+        {
+          "id": "388",
+          "title": "중동 쇼크에 폭락…20만 전자·100만 닉스 붕괴",
+          "url": "https://n.news.naver.com/mnews/article/005/0001834949?sid=101",
+          "published": "2026-03-03T17:15:00"
+        },
+        {
+          "id": "397",
+          "title": "‘18만전자·90만닉스’도 깨졌다…삼성전자·하이닉스, 장초반 급락했...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002608077?sid=101",
+          "published": "2026-03-04T10:36:00"
+        },
+        {
+          "id": "321",
+          "title": "18만전자·90만닉스도 깨졌다…지금 들어가도 될까?",
+          "url": "https://n.news.naver.com/mnews/article/003/0013802261?sid=101",
+          "published": "2026-03-05T07:00:00"
+        },
+        {
+          "id": "302",
+          "title": "삼성전자 11%↑·SK하이닉스 10%↑…19만전자·94만닉스 회복[핫스탁](종...",
+          "url": "https://n.news.naver.com/mnews/article/003/0013804092?sid=101",
+          "published": "2026-03-05T15:39:00"
+        },
+        {
+          "id": "142",
+          "title": "유가 급등 여파에…삼성전자·SK하이닉스 8% 넘게 동반 하락",
+          "url": "https://n.news.naver.com/mnews/article/009/0005647089?sid=101",
+          "published": "2026-03-09T10:05:00"
+        },
+        {
+          "id": "106",
+          "title": "'16만전자·81만닉스'…\"들어갈까 말까\" 고민하는 개미들",
+          "url": "https://n.news.naver.com/mnews/article/003/0013811455?sid=101",
+          "published": "2026-03-10T07:00:00"
+        }
+      ]
+    },
+    {
+      "cluster_id": 1,
+      "article_count": 10,
+      "title": "이달 중 ‘6000피·20만 전자’ 갈까…26일 엔비디아 실적 발표 주목",
+      "summary": "관련 기사: “삼성전자는 연일 최고가인데”…지지부진한 현대차, 상승세 시작되나 / 삼성전자·SK하이닉스, 미국發 훈풍에 최고가…'20만전자'·'100만닉스' 코... / 육천피 가시권…증권가 \"27만전자·150만닉스 간다\"",
+      "representative_article": {
+        "id": "447",
+        "title": "이달 중 ‘6000피·20만 전자’ 갈까…26일 엔비디아 실적 발표 주목",
+        "url": "https://n.news.naver.com/mnews/article/009/0005640871?sid=101",
+        "published": "2026-02-24T07:42:00"
+      },
+      "top_publishers": [],
+      "articles": [
+        {
+          "id": "554",
+          "title": "“삼성전자는 연일 최고가인데”…지지부진한 현대차, 상승세 시작되나",
+          "url": "https://n.news.naver.com/mnews/article/009/0005638858?sid=101",
+          "published": "2026-02-19T15:34:00"
+        },
+        {
+          "id": "518",
+          "title": "삼성전자·SK하이닉스, 미국發 훈풍에 최고가…'20만전자'·'100만닉스' 코...",
+          "url": "https://n.news.naver.com/mnews/article/088/0000997901?sid=101",
+          "published": "2026-02-23T10:37:00"
+        },
+        {
+          "id": "399",
+          "title": "육천피 가시권…증권가 \"27만전자·150만닉스 간다\"",
+          "url": "https://n.news.naver.com/mnews/article/003/0013783622?sid=101",
+          "published": "2026-02-24T05:00:00"
+        },
+        {
+          "id": "447",
+          "title": "이달 중 ‘6000피·20만 전자’ 갈까…26일 엔비디아 실적 발표 주목",
+          "url": "https://n.news.naver.com/mnews/article/009/0005640871?sid=101",
+          "published": "2026-02-24T07:42:00"
+        },
+        {
+          "id": "419",
+          "title": "'100만닉스' 황제주 등극, '20만전자' 코앞…관세 공포도 못 세운 랠리",
+          "url": "https://n.news.naver.com/mnews/article/008/0005321421?sid=101",
+          "published": "2026-02-24T11:58:00"
+        },
+        {
+          "id": "487",
+          "title": "[속보] 삼성전자, 사상 첫 20만원 돌파…육천피까지 40포인트",
+          "url": "https://n.news.naver.com/mnews/article/016/0002604278?sid=101",
+          "published": "2026-02-24T13:13:00"
+        },
+        {
+          "id": "364",
+          "title": "20만전자·100만닉스 달성…반도체 투톱 신고가 경신",
+          "url": "https://n.news.naver.com/mnews/article/079/0004118334?sid=101",
+          "published": "2026-02-24T13:56:00"
+        },
+        {
+          "id": "427",
+          "title": "20만전자·100만닉스 현실로... 코스피 6000 코앞에 왔다",
+          "url": "https://n.news.naver.com/mnews/article/023/0003960785?sid=101",
+          "published": "2026-02-24T15:38:00"
+        },
+        {
+          "id": "344",
+          "title": "'20만전자' '100만닉스' 나란히 뚫었다",
+          "url": "https://n.news.naver.com/mnews/article/015/0005254635?sid=101",
+          "published": "2026-02-24T17:42:00"
+        },
+        {
+          "id": "401",
+          "title": "AI 투자 기대에 코스피 이틀째 상승…삼성전자·SK하이닉스 강세",
+          "url": "https://n.news.naver.com/mnews/article/020/0003703230?sid=101",
+          "published": "2026-03-11T16:32:00"
+        }
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "article_count": 21,
+      "title": "30만전자·160만닉스 찍고 '코스피 8000'간다[코스피6000돌파]",
+      "summary": "관련 기사: 삼성전자 HBM4 세계 최초 양산 출하…HBM4 경쟁 본격화 / 반도체 슈퍼사이클…‘27만전자’·‘150만닉스’ 간다 / “전인미답 슈퍼사이클 온다”…삼성전자·SK하이닉스 목표주가 ‘UP’...",
+      "representative_article": {
+        "id": "499",
+        "title": "30만전자·160만닉스 찍고 '코스피 8000'간다[코스피6000돌파]",
+        "url": "https://n.news.naver.com/mnews/article/277/0005725621?sid=101",
+        "published": "2026-02-25T10:08:00"
+      },
+      "top_publishers": [],
+      "articles": [
+        {
+          "id": "547",
+          "title": "삼성전자 HBM4 세계 최초 양산 출하…HBM4 경쟁 본격화",
+          "url": "https://n.news.naver.com/mnews/article/057/0001935154?sid=101",
+          "published": "2026-02-12T19:58:00"
+        },
+        {
+          "id": "464",
+          "title": "반도체 슈퍼사이클…‘27만전자’·‘150만닉스’ 간다",
+          "url": "https://n.news.naver.com/mnews/article/016/0002603604?sid=101",
+          "published": "2026-02-23T11:27:00"
+        },
+        {
+          "id": "465",
+          "title": "“전인미답 슈퍼사이클 온다”…삼성전자·SK하이닉스 목표주가 ‘UP’...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002603625?sid=101",
+          "published": "2026-02-23T11:34:00"
+        },
+        {
+          "id": "566",
+          "title": "오늘은 ‘20만전자·100만닉스’ 갈까…전 국민 꽂혔다",
+          "url": "https://n.news.naver.com/mnews/article/029/0003012223?sid=101",
+          "published": "2026-02-24T05:35:00"
+        },
+        {
+          "id": "404",
+          "title": "‘20만전자·100만닉스’ 현실 됐다…“여전히 저평가, 30만·160만 간다...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002604392?sid=101",
+          "published": "2026-02-24T16:03:00"
+        },
+        {
+          "id": "514",
+          "title": "20만전자·100만닉스 ‘쌍끌이’… 6000선 턱밑",
+          "url": "https://n.news.naver.com/mnews/article/022/0004108139?sid=101",
+          "published": "2026-02-24T18:55:00"
+        },
+        {
+          "id": "478",
+          "title": "애프터마켓서도 '20만전자', '백만닉스' 강세 계속",
+          "url": "https://n.news.naver.com/mnews/article/018/0006223920?sid=101",
+          "published": "2026-02-24T21:15:00"
+        },
+        {
+          "id": "499",
+          "title": "30만전자·160만닉스 찍고 '코스피 8000'간다[코스피6000돌파]",
+          "url": "https://n.news.naver.com/mnews/article/277/0005725621?sid=101",
+          "published": "2026-02-25T10:08:00"
+        },
+        {
+          "id": "328",
+          "title": "\"30만전자·160만닉스\"…반도체 랠리 어디까지[육천피 시대]",
+          "url": "https://n.news.naver.com/mnews/article/003/0013786599?sid=101",
+          "published": "2026-02-25T10:22:00"
+        },
+        {
+          "id": "445",
+          "title": "이젠 27만전자·150만닉스…7000P·8000P도 간다 [코스피 6000 돌파]",
+          "url": "https://n.news.naver.com/mnews/article/016/0002604821?sid=101",
+          "published": "2026-02-25T11:24:00"
+        },
+        {
+          "id": "377",
+          "title": "“아직도 고점 아냐”…삼전·하이닉스 목표가 또 뛰었다",
+          "url": "https://n.news.naver.com/mnews/article/009/0005641844?sid=101",
+          "published": "2026-02-25T15:07:00"
+        },
+        {
+          "id": "413",
+          "title": "40만전자·200만닉스 정조준…8000까지 달린다",
+          "url": "https://n.news.naver.com/mnews/article/018/0006224574?sid=101",
+          "published": "2026-02-25T16:37:00"
+        },
+        {
+          "id": "423",
+          "title": "반도체가 끌고 밸류업이 밀고 … 李정부서 125% 수직상승 '불스피'",
+          "url": "https://n.news.naver.com/mnews/article/009/0005642070?sid=101",
+          "published": "2026-02-25T18:05:00"
+        },
+        {
+          "id": "516",
+          "title": "“코스피 8000 간다”…‘34만 전자·170만 닉스’ 현실화될까[주형연의...",
+          "url": "https://n.news.naver.com/mnews/article/029/0003013092?sid=101",
+          "published": "2026-02-28T06:00:00"
+        },
+        {
+          "id": "348",
+          "title": "[돈이 보이는 경제] 진격의 반도체…'삼전닉스' 주가 어디까지?",
+          "url": "https://n.news.naver.com/mnews/article/448/0000593609?sid=101",
+          "published": "2026-02-28T19:36:00"
+        },
+        {
+          "id": "343",
+          "title": "“21만전자·106만닉스 땡큐”…반도체 ETF ‘불기둥’[펀드와치]",
+          "url": "https://n.news.naver.com/mnews/article/018/0006226826?sid=101",
+          "published": "2026-03-02T11:00:00"
+        },
+        {
+          "id": "265",
+          "title": "반도체 저승사자 “삼성전자 지금이 매수 기회” SK하이닉스도 긍정 전...",
+          "url": "https://n.news.naver.com/mnews/article/021/0002774843?sid=101",
+          "published": "2026-03-05T07:59:00"
+        },
+        {
+          "id": "171",
+          "title": "‘32만전자’까지 나왔다",
+          "url": "https://n.news.naver.com/mnews/article/016/0002612446?sid=101",
+          "published": "2026-03-12T11:21:00"
+        },
+        {
+          "id": "60",
+          "title": "주도주가 회복도 더 빠르다…반도체·증권·원전 고속 반등",
+          "url": "https://n.news.naver.com/mnews/article/015/0005261631?sid=101",
+          "published": "2026-03-12T17:26:00"
+        },
+        {
+          "id": "10",
+          "title": "“아직도 늦지 않았다?” ‘32만전자’에 ‘170만닉스’까지 나온 목표...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002613408?sid=101",
+          "published": "2026-03-14T06:40:00"
+        },
+        {
+          "id": "13",
+          "title": "중동 전쟁에도 반도체 낙관론…증권가 삼전닉스 목표가 '쑥'",
+          "url": "https://n.news.naver.com/mnews/article/009/0005650439?sid=101",
+          "published": "2026-03-15T17:40:00"
+        }
+      ]
+    }
+  ]
+}

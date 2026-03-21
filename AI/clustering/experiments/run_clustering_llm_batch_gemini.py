@@ -25,8 +25,10 @@ client = genai.Client(api_key=api_key)
 
 MODEL_NAME = "gemini-2.5-flash-lite"
 
-INPUT_PATH = Path("./AI/clustering/experiments/artifacts/cluster_samsung_1000/cluster_summary.json")
-OUTPUT_PATH = Path("./AI/clustering/experiments/llm_results/llm_cluster_summary_gemini_samsung.json")
+CURRENT_DIR = Path(__file__).resolve().parent
+
+INPUT_PATH = CURRENT_DIR / "artifacts" / "cluster_samsung_1000" / "cluster_summary.json"
+OUTPUT_PATH = CURRENT_DIR / "llm_results" / "llm_cluster_summary_gemini_samsung.json"
 
 MAX_CLUSTERS = 10
 MAX_TITLES_PER_CLUSTER = 5

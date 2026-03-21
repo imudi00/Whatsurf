@@ -1,0 +1,855 @@
+{
+  "table": "ai_test",
+  "query": "엔비디아 주가",
+  "article_count": 136,
+  "cluster_count": 2,
+  "noise_count": 0,
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "article_count": 18,
+      "title": "삼성전자, 글로벌 시총 14위 올랐다",
+      "summary": "관련 기사: 삼성전자, 글로벌 시총 14위 올랐다 / [속보] 삼성전자 도장깨기 나섰다…6% 급등, 시총 12위 / 삼성전자 '시총 도장깨기'…6% 급등, 월마트 제치고 세계12위(상보)",
+      "representative_article": {
+        "id": "457",
+        "title": "삼성전자, 글로벌 시총 14위 올랐다",
+        "url": "https://n.news.naver.com/mnews/article/277/0005723510?sid=101",
+        "published": "2026-02-20T09:56:00"
+      },
+      "top_publishers": [],
+      "articles": [
+        {
+          "id": "457",
+          "title": "삼성전자, 글로벌 시총 14위 올랐다",
+          "url": "https://n.news.naver.com/mnews/article/277/0005723510?sid=101",
+          "published": "2026-02-20T09:56:00"
+        },
+        {
+          "id": "531",
+          "title": "[속보] 삼성전자 도장깨기 나섰다…6% 급등, 시총 12위",
+          "url": "https://n.news.naver.com/mnews/article/015/0005255674?sid=101",
+          "published": "2026-02-26T14:01:00"
+        },
+        {
+          "id": "560",
+          "title": "삼성전자 '시총 도장깨기'…6% 급등, 월마트 제치고 세계12위(상보)",
+          "url": "https://n.news.naver.com/mnews/article/421/0008795517?sid=104",
+          "published": "2026-02-26T14:14:00"
+        },
+        {
+          "id": "315",
+          "title": "삼성전자 시총, 꿈의 '1조달러 클럽'…한국 기업사 최초",
+          "url": "https://n.news.naver.com/mnews/article/018/0006225417?sid=101",
+          "published": "2026-02-26T15:20:00"
+        },
+        {
+          "id": "282",
+          "title": "삼성전자, 韓기업 최초 시총 1조달러 돌파…세계 12위",
+          "url": "https://n.news.naver.com/mnews/article/014/0005483487?sid=101",
+          "published": "2026-02-26T15:46:00"
+        },
+        {
+          "id": "285",
+          "title": "삼성전자, 韓 기업 최초 시총 1조달러 돌파",
+          "url": "https://n.news.naver.com/mnews/article/030/0003402596?sid=101",
+          "published": "2026-02-26T16:55:00"
+        },
+        {
+          "id": "498",
+          "title": "“설명할 시간 없어, 어서 타”에 웃다가 23% 놓쳤다…삼성전자 1조달러...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004593936?sid=101",
+          "published": "2026-02-26T16:55:00"
+        },
+        {
+          "id": "305",
+          "title": "\"삼성전자 시총 1조 달러 클럽 진입…글로벌 12위 껑충\"",
+          "url": "https://n.news.naver.com/mnews/article/001/0015927561?sid=101",
+          "published": "2026-02-26T17:10:00"
+        },
+        {
+          "id": "279",
+          "title": "삼성전자, 반도체 훈풍에 시총 1조달러 클럽 진입",
+          "url": "https://n.news.naver.com/mnews/article/277/0005726797?sid=101",
+          "published": "2026-02-26T17:19:00"
+        },
+        {
+          "id": "479",
+          "title": "\"삼성전자 시총 1조 달러 클럽, 세계12위…11위 버크셔헤서웨이\"",
+          "url": "https://n.news.naver.com/mnews/article/374/0000494737?sid=104",
+          "published": "2026-02-26T17:21:00"
+        },
+        {
+          "id": "260",
+          "title": "'테슬라 게섯거라'…\"삼성전자 시총 1조 달러, 글로벌 12위\"",
+          "url": "https://n.news.naver.com/mnews/article/015/0005255907?sid=101",
+          "published": "2026-02-26T17:24:00"
+        },
+        {
+          "id": "398",
+          "title": "삼성전자 시총 1조 달러 클럽 입성…세계 12위",
+          "url": "https://n.news.naver.com/mnews/article/215/0001243203?sid=101",
+          "published": "2026-02-26T17:29:00"
+        },
+        {
+          "id": "358",
+          "title": "삼성전자, 한국 기업 최초 시총 1조달러 돌파…글로벌 상장사 12위 도약",
+          "url": "https://n.news.naver.com/mnews/article/654/0000168362?sid=101",
+          "published": "2026-02-26T17:33:00"
+        },
+        {
+          "id": "470",
+          "title": "미 시총 사이트 \"삼성전자 시총 1조달러 돌파⋯글로벌 12위\"",
+          "url": "https://n.news.naver.com/mnews/article/031/0001008871?sid=101",
+          "published": "2026-02-26T17:47:00"
+        },
+        {
+          "id": "472",
+          "title": "미국 시총 집계 사이트 \"삼성전자, 첫 '1조 달러 클럽' 입성… 월마트 제...",
+          "url": "https://n.news.naver.com/mnews/article/437/0000480498?sid=101",
+          "published": "2026-02-26T18:02:00"
+        },
+        {
+          "id": "460",
+          "title": "“버핏 턱 밑까지 추격” 삼성전자 세계 12위로 퀀텀 점프",
+          "url": "https://n.news.naver.com/mnews/article/050/0000102873?sid=101",
+          "published": "2026-02-26T18:07:00"
+        },
+        {
+          "id": "264",
+          "title": "삼성전자 시총 세계 12위… SK하이닉스는 21위",
+          "url": "https://n.news.naver.com/mnews/article/014/0005483631?sid=101",
+          "published": "2026-02-26T18:27:00"
+        },
+        {
+          "id": "258",
+          "title": "삼성전자, 릴리 제치고 글로벌 시총 13위…톱 10 가능성은",
+          "url": "https://n.news.naver.com/mnews/article/009/0005644159?sid=101",
+          "published": "2026-03-03T08:40:00"
+        }
+      ]
+    },
+    {
+      "cluster_id": 1,
+      "article_count": 118,
+      "title": "[하우머니] 모건스탠리, K반도체에 긍정적 입장으로 선회…이유는?",
+      "summary": "관련 기사: 마이크론 내년 실적 실망에 주가↓…삼전·SK하이닉스 ‘된서리’ / \"새해에는 반등할까\"…삼전 주가 전망은 / '반도체 들었다놨다' 트럼프에 삼성전자·SK하이닉스 '속앓이'",
+      "representative_article": {
+        "id": "893",
+        "title": "[하우머니] 모건스탠리, K반도체에 긍정적 입장으로 선회…이유는?",
+        "url": "https://n.news.naver.com/mnews/article/374/0000465229?sid=101",
+        "published": "2025-09-24T10:03:00"
+      },
+      "top_publishers": [],
+      "articles": [
+        {
+          "id": "1808",
+          "title": "마이크론 내년 실적 실망에 주가↓…삼전·SK하이닉스 ‘된서리’",
+          "url": "https://n.news.naver.com/mnews/article/016/0002404935?sid=101",
+          "published": "2024-12-19T11:46:00"
+        },
+        {
+          "id": "1804",
+          "title": "\"새해에는 반등할까\"…삼전 주가 전망은",
+          "url": "https://n.news.naver.com/mnews/article/003/0012991645?sid=101",
+          "published": "2025-01-01T05:00:00"
+        },
+        {
+          "id": "896",
+          "title": "'반도체 들었다놨다' 트럼프에 삼성전자·SK하이닉스 '속앓이'",
+          "url": "https://n.news.naver.com/mnews/article/001/0015595335?sid=101",
+          "published": "2025-08-30T11:53:00"
+        },
+        {
+          "id": "912",
+          "title": "삼전·SK하닉 출렁…사야 하나, 팔아야 하나",
+          "url": "https://n.news.naver.com/mnews/article/003/0013454641?sid=101",
+          "published": "2025-09-02T05:00:00"
+        },
+        {
+          "id": "899",
+          "title": "격주로 트럼프 ‘말 폭탄’...반도체 불확실성 더 키워",
+          "url": "https://n.news.naver.com/mnews/article/023/0003929891?sid=105",
+          "published": "2025-09-18T06:01:00"
+        },
+        {
+          "id": "886",
+          "title": "자국 기업끼리 똘똘 뭉치는 美中 반도체…“SK하이닉스도 파운드리 만들...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002532009?sid=101",
+          "published": "2025-09-20T06:31:00"
+        },
+        {
+          "id": "893",
+          "title": "[하우머니] 모건스탠리, K반도체에 긍정적 입장으로 선회…이유는?",
+          "url": "https://n.news.naver.com/mnews/article/374/0000465229?sid=101",
+          "published": "2025-09-24T10:03:00"
+        },
+        {
+          "id": "878",
+          "title": "美반도체 전략 결실맺나…인텔 첨단공정 발표에 국내업계 '긴장'",
+          "url": "https://n.news.naver.com/mnews/article/001/0015670237?sid=105",
+          "published": "2025-10-10T10:44:00"
+        },
+        {
+          "id": "877",
+          "title": "미 반도체 전략 결실맺나…인텔 첨단공정 발표에 국내업계 '긴장'",
+          "url": "https://n.news.naver.com/mnews/article/055/0001299107?sid=101",
+          "published": "2025-10-13T05:29:00"
+        },
+        {
+          "id": "859",
+          "title": "트럼프 “반도체는 논의했지만 블랙웰은 제외”",
+          "url": "https://n.news.naver.com/mnews/article/014/0005427451?sid=104",
+          "published": "2025-10-30T22:49:00"
+        },
+        {
+          "id": "843",
+          "title": "미국 반도체 통제 덕에…중 AI칩 설계 기업가 ‘33조원 거부’ 등극",
+          "url": "https://n.news.naver.com/mnews/article/028/0002776770?sid=104",
+          "published": "2025-11-17T13:14:00"
+        },
+        {
+          "id": "773",
+          "title": "中, 엔비디아 끊고 70조원으로 반도체 자립 올인…미국과의 전쟁 총력전",
+          "url": "https://n.news.naver.com/mnews/article/138/0002212431?sid=105",
+          "published": "2025-12-13T08:51:00"
+        },
+        {
+          "id": "764",
+          "title": "'기술 자립' 中 반도체 기업 잇따라 IPO…상장 대기 줄이어",
+          "url": "https://n.news.naver.com/mnews/article/011/0004570229?sid=104",
+          "published": "2025-12-22T16:18:00"
+        },
+        {
+          "id": "751",
+          "title": "700조 쏟아붓는 K-반도체, 전기는 어디서 가져올 건가",
+          "url": "https://n.news.naver.com/mnews/article/053/0000054600?sid=101",
+          "published": "2025-12-28T09:00:00"
+        },
+        {
+          "id": "1978",
+          "title": "\"삼전·하이닉스 더 오른다\" 증권가 올해 톱픽...\"비중 축소\" 외친 업종...",
+          "url": "https://n.news.naver.com/mnews/article/008/0005299295?sid=101",
+          "published": "2026-01-02T06:02:00"
+        },
+        {
+          "id": "946",
+          "title": "[CES 2026]기술패권 축소판 CES…中 물량공세·美 담론주도, '실익' 챙긴...",
+          "url": "https://n.news.naver.com/mnews/article/277/0005704795?sid=101",
+          "published": "2026-01-10T09:00:00"
+        },
+        {
+          "id": "684",
+          "title": "AI 시대, 반도체 패권 경쟁 '삼성·SK·TSMC·인텔 운명의 갈림길'",
+          "url": "https://n.news.naver.com/mnews/article/123/0002375727?sid=004",
+          "published": "2026-01-15T07:31:00"
+        },
+        {
+          "id": "712",
+          "title": "2년 새 주가 3배 폭등…삼성도 쓰는 반도체 '슈퍼을'의 정체 [김채연의...",
+          "url": "https://n.news.naver.com/mnews/article/015/0005239966?sid=101",
+          "published": "2026-01-21T08:03:00"
+        },
+        {
+          "id": "1845",
+          "title": "\"삼전 상한가 30%→60%\"…개별 종목 '2배 레버리지 ETF' 허용 영향은",
+          "url": "https://n.news.naver.com/mnews/article/003/0013736246?sid=101",
+          "published": "2026-01-29T04:00:00"
+        },
+        {
+          "id": "691",
+          "title": "美 7조·EU 1나노 도전…주요국 반도체 R&D 투자 경쟁 가속 [글로벌 뉴스...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004584210?sid=101",
+          "published": "2026-01-29T07:58:00"
+        },
+        {
+          "id": "1805",
+          "title": "\"땡큐, 젠슨 황\"…삼전·하닉 8조 산 개미, 일주일만에 '방긋' [종목+]",
+          "url": "https://n.news.naver.com/mnews/article/015/0005249078?sid=101",
+          "published": "2026-02-09T22:01:00"
+        },
+        {
+          "id": "1847",
+          "title": "지칠줄 모르는 '반도체 사랑' … 삼전·하이닉스 검색 1·2위 [빅데이터...",
+          "url": "https://n.news.naver.com/mnews/article/009/0005636629?sid=101",
+          "published": "2026-02-12T16:01:00"
+        },
+        {
+          "id": "547",
+          "title": "삼성전자 HBM4 세계 최초 양산 출하…HBM4 경쟁 본격화",
+          "url": "https://n.news.naver.com/mnews/article/057/0001935154?sid=101",
+          "published": "2026-02-12T19:58:00"
+        },
+        {
+          "id": "512",
+          "title": "삼성 \"세계 최초 HBM4 출하\"…코스피 5,500 돌파",
+          "url": "https://n.news.naver.com/mnews/article/055/0001332766?sid=101",
+          "published": "2026-02-13T00:38:00"
+        },
+        {
+          "id": "549",
+          "title": "HBM4 시장 선점한 삼성전자…주가도 '20만전자' 신기록 눈앞",
+          "url": "https://n.news.naver.com/mnews/article/421/0008773125?sid=101",
+          "published": "2026-02-13T05:35:00"
+        },
+        {
+          "id": "551",
+          "title": "18만전자가 만든 진풍경... ‘이재용 밈’을 아시나요",
+          "url": "https://n.news.naver.com/mnews/article/023/0003959179?sid=101",
+          "published": "2026-02-13T15:54:00"
+        },
+        {
+          "id": "677",
+          "title": "'세계 최초' HBM4 깃발 꽂은 삼성… 쫓고 쫓기는 HBM 패권·장비 확보 '총...",
+          "url": "https://n.news.naver.com/mnews/article/138/0002218174?sid=105",
+          "published": "2026-02-15T11:12:00"
+        },
+        {
+          "id": "471",
+          "title": "삼성전자, 장중 사상 첫 19만원 돌파…미 기술주 훈풍",
+          "url": "https://n.news.naver.com/mnews/article/422/0000835267?sid=101",
+          "published": "2026-02-19T09:40:00"
+        },
+        {
+          "id": "350",
+          "title": "'20만 전자'도 찍나…삼성전자, 사상 첫 19만원 '돌파'",
+          "url": "https://n.news.naver.com/mnews/article/015/0005252260?sid=101",
+          "published": "2026-02-19T10:06:00"
+        },
+        {
+          "id": "573",
+          "title": "'19만 전자' 찍고 파죽지세 삼성전자…증권가 '깜짝 전망'",
+          "url": "https://n.news.naver.com/mnews/article/374/0000493259?sid=101",
+          "published": "2026-02-20T07:29:00"
+        },
+        {
+          "id": "644",
+          "title": "'반도체 투톱' HBM4 격돌...메모리 폭등에 '램마겟돈' 현실로",
+          "url": "https://n.news.naver.com/mnews/article/052/0002317310?sid=101",
+          "published": "2026-02-21T05:03:00"
+        },
+        {
+          "id": "389",
+          "title": "‘19만 전자’에도 9조 던진 외국인… 차익 실현? 하락 베팅?",
+          "url": "https://n.news.naver.com/mnews/article/029/0003011848?sid=101",
+          "published": "2026-02-22T10:02:00"
+        },
+        {
+          "id": "426",
+          "title": "‘19만전자’ 찍자마자 9조 짐 싼 외인…‘육천피’ 거품일까 신호탄일...",
+          "url": "https://n.news.naver.com/mnews/article/022/0004107448?sid=101",
+          "published": "2026-02-22T14:48:00"
+        },
+        {
+          "id": "422",
+          "title": "“삼성전자·하이닉스 고점?… 아직 팔 때 아니다”",
+          "url": "https://n.news.naver.com/mnews/article/023/0003960409?sid=101",
+          "published": "2026-02-23T00:37:00"
+        },
+        {
+          "id": "420",
+          "title": "[특징주] 삼성전자·SK하이닉스, 미국발 훈풍에 동반 최고가 경신",
+          "url": "https://n.news.naver.com/mnews/article/001/0015917715?sid=101",
+          "published": "2026-02-23T09:11:00"
+        },
+        {
+          "id": "679",
+          "title": "[자막뉴스] 씨가 마른 재고에 발 동동...K-반도체에 축복이 된 '램마겟돈...",
+          "url": "https://n.news.naver.com/mnews/article/052/0002318066?sid=101",
+          "published": "2026-02-23T09:20:00"
+        },
+        {
+          "id": "480",
+          "title": "'20만전자'·'100만닉스' 코앞으로…동반 최고가 경신",
+          "url": "https://n.news.naver.com/mnews/article/374/0000493669?sid=101",
+          "published": "2026-02-23T09:57:00"
+        },
+        {
+          "id": "518",
+          "title": "삼성전자·SK하이닉스, 미국發 훈풍에 최고가…'20만전자'·'100만닉스' 코...",
+          "url": "https://n.news.naver.com/mnews/article/088/0000997901?sid=101",
+          "published": "2026-02-23T10:37:00"
+        },
+        {
+          "id": "429",
+          "title": "[특징주] 삼성전자·SK하이닉스, 미국발 훈풍에 동반 최고가 경신(종합...",
+          "url": "https://n.news.naver.com/mnews/article/001/0015919250?sid=101",
+          "published": "2026-02-23T15:41:00"
+        },
+        {
+          "id": "383",
+          "title": "'20만전자·100만닉스' 가시권…눈높이 올리는 증권가",
+          "url": "https://n.news.naver.com/mnews/article/014/0005481331?sid=101",
+          "published": "2026-02-23T15:58:00"
+        },
+        {
+          "id": "393",
+          "title": "20만전자·100만닉스 눈앞…반도체 슈퍼사이클도 힘보탠다",
+          "url": "https://n.news.naver.com/mnews/article/014/0005481441?sid=101",
+          "published": "2026-02-23T18:14:00"
+        },
+        {
+          "id": "417",
+          "title": "\"나스닥이었다면 지금의 3배\"…삼성 주가 질주는 'ing'",
+          "url": "https://n.news.naver.com/mnews/article/018/0006223036?sid=101",
+          "published": "2026-02-23T18:43:00"
+        },
+        {
+          "id": "399",
+          "title": "육천피 가시권…증권가 \"27만전자·150만닉스 간다\"",
+          "url": "https://n.news.naver.com/mnews/article/003/0013783622?sid=101",
+          "published": "2026-02-24T05:00:00"
+        },
+        {
+          "id": "447",
+          "title": "이달 중 ‘6000피·20만 전자’ 갈까…26일 엔비디아 실적 발표 주목",
+          "url": "https://n.news.naver.com/mnews/article/009/0005640871?sid=101",
+          "published": "2026-02-24T07:42:00"
+        },
+        {
+          "id": "370",
+          "title": "[속보] 20만원 찍은 삼성전자…SK하이닉스는 100만 황제주 등극",
+          "url": "https://n.news.naver.com/mnews/article/081/0003620327?sid=101",
+          "published": "2026-02-24T13:04:00"
+        },
+        {
+          "id": "524",
+          "title": "20만전자·100만닉스 찍었다... 모든 악재 뚫은 코스피, 6000 턱밑",
+          "url": "https://n.news.naver.com/mnews/article/469/0000916049?sid=101",
+          "published": "2026-02-24T16:31:00"
+        },
+        {
+          "id": "431",
+          "title": "20만전자·100만닉스 찍더니…'깜짝 전망' 내놓은 증권가 [종목+]",
+          "url": "https://n.news.naver.com/mnews/article/015/0005254728?sid=101",
+          "published": "2026-02-24T22:01:00"
+        },
+        {
+          "id": "435",
+          "title": "신고가 행진 이어가는 삼성전자…장중 시가총액 1200조 돌파",
+          "url": "https://n.news.naver.com/mnews/article/015/0005254848?sid=101",
+          "published": "2026-02-25T09:22:00"
+        },
+        {
+          "id": "318",
+          "title": "34만전자·170만닉스 전망…맥쿼리 \"메모리 공급부족 심화\"",
+          "url": "https://n.news.naver.com/mnews/article/018/0006224274?sid=101",
+          "published": "2026-02-25T11:05:00"
+        },
+        {
+          "id": "515",
+          "title": "20만전자·100만닉스, 고점일까 더 오를까…엔비디아 실적에 쏠린 눈",
+          "url": "https://n.news.naver.com/mnews/article/629/0000475545?sid=101",
+          "published": "2026-02-25T11:34:00"
+        },
+        {
+          "id": "377",
+          "title": "“아직도 고점 아냐”…삼전·하이닉스 목표가 또 뛰었다",
+          "url": "https://n.news.naver.com/mnews/article/009/0005641844?sid=101",
+          "published": "2026-02-25T15:07:00"
+        },
+        {
+          "id": "413",
+          "title": "40만전자·200만닉스 정조준…8000까지 달린다",
+          "url": "https://n.news.naver.com/mnews/article/018/0006224574?sid=101",
+          "published": "2026-02-25T16:37:00"
+        },
+        {
+          "id": "336",
+          "title": "AMD, 메타에 1000억弗 AI칩 공급…\"삼성전자 수혜\"",
+          "url": "https://n.news.naver.com/mnews/article/015/0005255185?sid=101",
+          "published": "2026-02-25T17:11:00"
+        },
+        {
+          "id": "379",
+          "title": "젠슨 황이 또 일냈다…삼성전자·SK하닉 개미들 '기대감 폭발' [종목+]",
+          "url": "https://n.news.naver.com/mnews/article/015/0005255422?sid=101",
+          "published": "2026-02-26T08:40:00"
+        },
+        {
+          "id": "403",
+          "title": "파죽지세 삼성전자, 장중 ‘21만전자’ 고지 올랐다",
+          "url": "https://n.news.naver.com/mnews/article/081/0003621030?sid=101",
+          "published": "2026-02-26T09:11:00"
+        },
+        {
+          "id": "463",
+          "title": "\"땡큐, 엔비디아\" 내친김에 21만전자...SK하이닉스도 달린다",
+          "url": "https://n.news.naver.com/mnews/article/008/0005322568?sid=101",
+          "published": "2026-02-26T09:13:00"
+        },
+        {
+          "id": "490",
+          "title": "21만전자·103만닉스…엔비디아 훈풍에 날아오른 반도체주[특징주]",
+          "url": "https://n.news.naver.com/mnews/article/018/0006225003?sid=101",
+          "published": "2026-02-26T09:18:00"
+        },
+        {
+          "id": "503",
+          "title": "엔비디아 호실적에…삼성전자·SK하이닉스, 신고가 행진[핫종목]",
+          "url": "https://n.news.naver.com/mnews/article/421/0008794367?sid=101",
+          "published": "2026-02-26T09:30:00"
+        },
+        {
+          "id": "462",
+          "title": "“주가 계속 오르네”…21만전자·106만닉스 고지 돌파 [줍줍 리포트]",
+          "url": "https://n.news.naver.com/mnews/article/011/0004593686?sid=101",
+          "published": "2026-02-26T09:34:00"
+        },
+        {
+          "id": "381",
+          "title": "삼성전자 6% 급등, 코스피 6200 돌파…엔비디아 호실적 영향",
+          "url": "https://n.news.naver.com/mnews/article/028/0002793262?sid=101",
+          "published": "2026-02-26T09:58:00"
+        },
+        {
+          "id": "372",
+          "title": "엔비디아 또 일냈다…삼성전자·하이닉스 훈풍 올라탄 이유",
+          "url": "https://n.news.naver.com/mnews/article/025/0003505390?sid=101",
+          "published": "2026-02-26T10:04:00"
+        },
+        {
+          "id": "502",
+          "title": "여기서 더 오른다고?…‘34만전자·170만닉스’ 간다 [종목Pick]",
+          "url": "https://n.news.naver.com/mnews/article/016/0002605433?sid=101",
+          "published": "2026-02-26T10:27:00"
+        },
+        {
+          "id": "576",
+          "title": "엔비디아 예상치 웃돈 실적에…삼성전자·SK하이닉스 또 ‘신고가’",
+          "url": "https://n.news.naver.com/mnews/article/009/0005642268?sid=101",
+          "published": "2026-02-26T10:29:00"
+        },
+        {
+          "id": "507",
+          "title": "삼성전자·SK하이닉스, 동반 7%대 급등 마감…시총 2000조 돌파[핫스탁]...",
+          "url": "https://n.news.naver.com/mnews/article/003/0013790817?sid=101",
+          "published": "2026-02-26T15:42:00"
+        },
+        {
+          "id": "286",
+          "title": "코스피 사상 첫 6,300 고지 점령… 삼성전자, 시총 1조 달러 ‘클럽’ 가...",
+          "url": "https://n.news.naver.com/mnews/article/020/0003700029?sid=101",
+          "published": "2026-02-26T17:27:00"
+        },
+        {
+          "id": "357",
+          "title": "'AI 슈퍼사이클' 올라탄 K증시 … 반도체·소부장 질주",
+          "url": "https://n.news.naver.com/mnews/article/009/0005642683?sid=101",
+          "published": "2026-02-26T17:40:00"
+        },
+        {
+          "id": "528",
+          "title": "반도체ETF에 연일 뭉칫돈 … 삼전·하이닉스 시총 2천조 넘어",
+          "url": "https://n.news.naver.com/mnews/article/009/0005642728?sid=101",
+          "published": "2026-02-26T17:56:00"
+        },
+        {
+          "id": "469",
+          "title": "코스피 6300 돌파, 삼성전자 시총 1조달러 넘겨",
+          "url": "https://n.news.naver.com/mnews/article/020/0003700093?sid=101",
+          "published": "2026-02-27T00:31:00"
+        },
+        {
+          "id": "649",
+          "title": "SK하이닉스, AI 패권전쟁·반도체 부족 계속…목표가 129만↑-현대차",
+          "url": "https://n.news.naver.com/mnews/article/008/0005323208?sid=101",
+          "published": "2026-02-27T08:45:00"
+        },
+        {
+          "id": "526",
+          "title": "엔비디아 급락에…삼성전자·SK하이닉스 장 초반 약세",
+          "url": "https://n.news.naver.com/mnews/article/008/0005323232?sid=101",
+          "published": "2026-02-27T09:08:00"
+        },
+        {
+          "id": "298",
+          "title": "美반도체주 약세에 삼성전자·SK하이닉스 하락 출발[핫스탁]",
+          "url": "https://n.news.naver.com/mnews/article/003/0013791864?sid=101",
+          "published": "2026-02-27T09:32:00"
+        },
+        {
+          "id": "313",
+          "title": "美반도체주 약세에 삼성전자·SK하이닉스 하락 마감[핫스탁](종합)",
+          "url": "https://n.news.naver.com/mnews/article/003/0013792951?sid=101",
+          "published": "2026-02-27T15:42:00"
+        },
+        {
+          "id": "537",
+          "title": "외인 사상최대 7조 매물폭탄 … 개인 6.2조 매수로 육탄방어",
+          "url": "https://n.news.naver.com/mnews/article/009/0005643294?sid=101",
+          "published": "2026-02-27T17:52:00"
+        },
+        {
+          "id": "440",
+          "title": "“삼전 숨 고르기?” 삼성전자 vs 비트코인 뭐 살까?...비트코인 시가총...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004594400?sid=101",
+          "published": "2026-02-27T19:30:00"
+        },
+        {
+          "id": "564",
+          "title": "21% 프리미엄에도 불티...삼성·하이닉스에 중국인도 몰려들었다",
+          "url": "https://n.news.naver.com/mnews/article/008/0005323638?sid=101",
+          "published": "2026-02-28T09:30:00"
+        },
+        {
+          "id": "348",
+          "title": "[돈이 보이는 경제] 진격의 반도체…'삼전닉스' 주가 어디까지?",
+          "url": "https://n.news.naver.com/mnews/article/448/0000593609?sid=101",
+          "published": "2026-02-28T19:36:00"
+        },
+        {
+          "id": "346",
+          "title": "20만 전자, 코스피 5900 모두 붕괴…증시 ‘검은 화요일’ [美, 이란 공습...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004595158?sid=101",
+          "published": "2026-03-03T13:59:00"
+        },
+        {
+          "id": "559",
+          "title": "日 키옥시아 주가 14배↑…SK하이닉스 지분가치 13조 넘게 올랐다",
+          "url": "https://n.news.naver.com/mnews/article/011/0004595162?sid=101",
+          "published": "2026-03-03T14:09:00"
+        },
+        {
+          "id": "207",
+          "title": "중동 리스크에도 삼성전자·SK하이닉스 실적 상향…\"AI 메모리 호황 지...",
+          "url": "https://n.news.naver.com/mnews/article/003/0013799555?sid=101",
+          "published": "2026-03-04T06:10:00"
+        },
+        {
+          "id": "563",
+          "title": "반도체 쌍두마차 휘청였지만 … 잘 버티는 소부장주",
+          "url": "https://n.news.naver.com/mnews/article/009/0005645262?sid=101",
+          "published": "2026-03-04T17:45:00"
+        },
+        {
+          "id": "265",
+          "title": "반도체 저승사자 “삼성전자 지금이 매수 기회” SK하이닉스도 긍정 전...",
+          "url": "https://n.news.naver.com/mnews/article/021/0002774843?sid=101",
+          "published": "2026-03-05T07:59:00"
+        },
+        {
+          "id": "410",
+          "title": "'20만 전자' 다시 탈환…HBM·실적·주주환원 삼박자 갖췄다",
+          "url": "https://n.news.naver.com/mnews/article/088/0000999686?sid=101",
+          "published": "2026-03-05T16:33:00"
+        },
+        {
+          "id": "382",
+          "title": "엔비디아 '루빈 전환' HBM4 시장 격돌…주가는 3% 하락",
+          "url": "https://n.news.naver.com/mnews/article/243/0000094080?sid=101",
+          "published": "2026-03-07T09:26:00"
+        },
+        {
+          "id": "351",
+          "title": "175년 ‘고인물’ 美코닝 주가 3배 올랐는데...지금 들어가도 될까요 [매...",
+          "url": "https://n.news.naver.com/mnews/article/009/0005646706?sid=101",
+          "published": "2026-03-08T10:41:00"
+        },
+        {
+          "id": "72",
+          "title": "[특징주] 美 기술주 삭풍에 삼성전자 7% 내려…SK하이닉스도 급락",
+          "url": "https://n.news.naver.com/mnews/article/001/0015946048?sid=101",
+          "published": "2026-03-09T09:14:00"
+        },
+        {
+          "id": "217",
+          "title": "삼성전자·SK하이닉스 장 초반 급락…미 기술주 약세 여파",
+          "url": "https://n.news.naver.com/mnews/article/654/0000169709?sid=101",
+          "published": "2026-03-09T09:44:00"
+        },
+        {
+          "id": "283",
+          "title": "'17만전자'도 위태위태…반도체 대장주 동반 '폭락'",
+          "url": "https://n.news.naver.com/mnews/article/374/0000496564?sid=101",
+          "published": "2026-03-09T09:51:00"
+        },
+        {
+          "id": "349",
+          "title": "삼성전자·SK하이닉스, 8%대 급락…유가·美고용 충격에 반도체주 흔들",
+          "url": "https://n.news.naver.com/mnews/article/123/0002379054?sid=101",
+          "published": "2026-03-09T10:02:00"
+        },
+        {
+          "id": "167",
+          "title": "[특징주] 美 기술주 삭풍에 삼성전자 7.8% 폭락…SK하이닉스도 급락(종합...",
+          "url": "https://n.news.naver.com/mnews/article/001/0015947482?sid=101",
+          "published": "2026-03-09T15:39:00"
+        },
+        {
+          "id": "378",
+          "title": "[주간증시전망] 고유가 직격탄 맞은 삼성전자·SK하이닉스 주가 '와장창...",
+          "url": "https://n.news.naver.com/mnews/article/374/0000496721?sid=101",
+          "published": "2026-03-09T17:26:00"
+        },
+        {
+          "id": "223",
+          "title": "“급락한 반도체株 ‘비정상의 정상화’ 기대…삼성전자·하이닉스 비중...",
+          "url": "https://n.news.naver.com/mnews/article/018/0006231423?sid=101",
+          "published": "2026-03-10T07:50:00"
+        },
+        {
+          "id": "293",
+          "title": "“전쟁 빨리 끝난다” 트럼프 발언에…삼성전자·SK하이닉스 프리마켓서...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004597472?sid=101",
+          "published": "2026-03-10T08:23:00"
+        },
+        {
+          "id": "144",
+          "title": "‘반도체 호황’ 삼성전자, 임직원 평균 연봉 1억 5800만원으로 역대 최...",
+          "url": "https://n.news.naver.com/mnews/article/023/0003963675?sid=105",
+          "published": "2026-03-10T18:00:00"
+        },
+        {
+          "id": "112",
+          "title": "삼성전자, 자사주 16조 소각…R&D 37.7조 '역대 최대'",
+          "url": "https://n.news.naver.com/mnews/article/119/0003067512?sid=101",
+          "published": "2026-03-10T18:42:00"
+        },
+        {
+          "id": "150",
+          "title": "[특징주] 삼성전자, 3% 급등해 '19만전자' 회복…하닉도 2%대↑",
+          "url": "https://n.news.naver.com/mnews/article/001/0015951297?sid=101",
+          "published": "2026-03-11T09:22:00"
+        },
+        {
+          "id": "210",
+          "title": "장 초반 돌아온 '19만전자'...하닉도 2%대↑",
+          "url": "https://n.news.naver.com/mnews/article/215/0001244682?sid=101",
+          "published": "2026-03-11T09:38:00"
+        },
+        {
+          "id": "160",
+          "title": "'19만전자'·'95만닉스' 회복…개인·기관 매수세",
+          "url": "https://n.news.naver.com/mnews/article/654/0000170138?sid=101",
+          "published": "2026-03-11T09:46:00"
+        },
+        {
+          "id": "155",
+          "title": "삼성전자·SK하이닉스, 회복세…‘19만 전자’ 등 1%대 상승",
+          "url": "https://n.news.naver.com/mnews/article/009/0005648360?sid=101",
+          "published": "2026-03-11T09:58:00"
+        },
+        {
+          "id": "21",
+          "title": "이경실 \"삼성전자 주식, 난 쳐다보기도 싫어\"…왜?",
+          "url": "https://n.news.naver.com/mnews/article/243/0000094312?sid=101",
+          "published": "2026-03-11T13:58:00"
+        },
+        {
+          "id": "200",
+          "title": "전쟁 종식 기대감에 코스피 안도 랠리…삼성전자 '19만 전자' 복귀",
+          "url": "https://n.news.naver.com/mnews/article/469/0000918850?sid=101",
+          "published": "2026-03-11T16:24:00"
+        },
+        {
+          "id": "79",
+          "title": "[클릭 e종목]“삼성전자, 실적 성장 본격화…목표주가 32만원으로 상향...",
+          "url": "https://n.news.naver.com/mnews/article/277/0005733050?sid=101",
+          "published": "2026-03-12T07:58:00"
+        },
+        {
+          "id": "134",
+          "title": "“삼성전자, 32만원 간다…내년까지 메모리 반도체 완판”",
+          "url": "https://n.news.naver.com/mnews/article/009/0005648967?sid=101",
+          "published": "2026-03-12T08:11:00"
+        },
+        {
+          "id": "94",
+          "title": "내년 메모리 물량도 완판, 어닝서프라이즈 예약...\"32만전자 가자\"-KB",
+          "url": "https://n.news.naver.com/mnews/article/008/0005328821?sid=101",
+          "published": "2026-03-12T08:13:00"
+        },
+        {
+          "id": "95",
+          "title": "KB증권 \"삼성전자, 실적 성장 본격화 전망…목표가 32만원\"",
+          "url": "https://n.news.naver.com/mnews/article/001/0015953627?sid=101",
+          "published": "2026-03-12T08:30:00"
+        },
+        {
+          "id": "101",
+          "title": "KB證 \"삼성전자, 내년까지 메모리 완판…목표가 32만원\"",
+          "url": "https://n.news.naver.com/mnews/article/003/0013816693?sid=101",
+          "published": "2026-03-12T08:37:00"
+        },
+        {
+          "id": "38",
+          "title": "“32만원 간다” 삼성전자 실적 레벨업 예상 나왔다",
+          "url": "https://n.news.naver.com/mnews/article/123/0002379289?sid=101",
+          "published": "2026-03-12T08:41:00"
+        },
+        {
+          "id": "117",
+          "title": "KB증권 \"삼성전자 1분기 영업익 40조원…목표가 32만원으로 상향 조정\"",
+          "url": "https://n.news.naver.com/mnews/article/422/0000843100?sid=101",
+          "published": "2026-03-12T09:09:00"
+        },
+        {
+          "id": "24",
+          "title": "삼성전자, 목표가 32만원 나왔다..\"내년까지 메모리 완판\"",
+          "url": "https://n.news.naver.com/mnews/article/014/0005490153?sid=101",
+          "published": "2026-03-12T09:13:00"
+        },
+        {
+          "id": "58",
+          "title": "'32만전자' 삼성전자 1Q에만 영업익 6배 급증…목표가↑",
+          "url": "https://n.news.naver.com/mnews/article/018/0006233166?sid=101",
+          "published": "2026-03-12T09:38:00"
+        },
+        {
+          "id": "73",
+          "title": "“삼성전자 32만원 간다, 내년 메모리 완판”…KB, 목표주가 33% 상향",
+          "url": "https://n.news.naver.com/mnews/article/016/0002612330?sid=101",
+          "published": "2026-03-12T09:57:00"
+        },
+        {
+          "id": "31",
+          "title": "\"26만전자, 135만닉스 간다\"…골드만삭스도 '파격 전망'",
+          "url": "https://n.news.naver.com/mnews/article/015/0005261375?sid=101",
+          "published": "2026-03-12T10:21:00"
+        },
+        {
+          "id": "23",
+          "title": "“19만전자는 섭섭하지”…실적 가시화에 ‘32만전자’ 전망",
+          "url": "https://n.news.naver.com/mnews/article/024/0000104029?sid=101",
+          "published": "2026-03-12T11:04:00"
+        },
+        {
+          "id": "209",
+          "title": "“삼성전자 32만원 간대”…상위 1%, ‘18만 전자’ 폭풍 매수[주식 초고...",
+          "url": "https://n.news.naver.com/mnews/article/011/0004598480?sid=101",
+          "published": "2026-03-12T11:26:00"
+        },
+        {
+          "id": "49",
+          "title": "KB증권 “삼성전자, 내년 메모리 완판…목표가 32만원”",
+          "url": "https://n.news.naver.com/mnews/article/138/0002220368?sid=101",
+          "published": "2026-03-12T11:45:00"
+        },
+        {
+          "id": "603",
+          "title": "AI 반도체 전쟁 2라운드…GPU 다음은 ASIC, 삼전닉스 더 웃는 이유",
+          "url": "https://n.news.naver.com/mnews/article/008/0005329261?sid=105",
+          "published": "2026-03-12T17:12:00"
+        },
+        {
+          "id": "52",
+          "title": "삼성운용, 국내 첫 ‘AI 광통신’ ETF 상장",
+          "url": "https://n.news.naver.com/mnews/article/011/0004599196?sid=105",
+          "published": "2026-03-14T06:09:00"
+        },
+        {
+          "id": "10",
+          "title": "“아직도 늦지 않았다?” ‘32만전자’에 ‘170만닉스’까지 나온 목표...",
+          "url": "https://n.news.naver.com/mnews/article/016/0002613408?sid=101",
+          "published": "2026-03-14T06:40:00"
+        },
+        {
+          "id": "12",
+          "title": "삼전·하이닉스 뚝뚝 떨어지는데…'놀라운 전망' 나왔다 [분석+]",
+          "url": "https://n.news.naver.com/mnews/article/015/0005262295?sid=101",
+          "published": "2026-03-14T15:34:00"
+        }
+      ]
+    }
+  ]
+}
