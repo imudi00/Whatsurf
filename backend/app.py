@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -13,6 +14,19 @@ from crawler import main_crawler
 load_dotenv()
 
 app = FastAPI(title="Whatsurf API Server")
+
+#CORS 설정
+origins = [
+    "http://localhost:3000", #로컬용
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,    # 3000번 포트 허용
+    allow_credentials=True,
+    allow_methods=["*"],      # 모든 HTTP 메서드(GET, POST 등) 허용
+    allow_headers=["*"],      # 모든 헤더 허용
+)
 
 # Supabase 설정
 SUPABASE_URL = os.getenv("SUPABASE_URL")
