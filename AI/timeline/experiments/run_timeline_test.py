@@ -1,23 +1,21 @@
 ﻿import argparse
 import os
 import sys
+
 import pandas as pd
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))      # C:\...\AI\AI
-PACKAGE_PARENT = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", ".."))  # C:\...\Desktop\AI
-TIMELINE_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))           # C:\...\AI\AI\timeline
+# AI 패키지 루트 추가
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+# timeline/src 추가
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-for path in [PACKAGE_PARENT, PROJECT_ROOT, TIMELINE_ROOT]:
-    if path not in sys.path:
-        sys.path.append(path)
-        
 from AI.source.data_loader import load_news_df, load_ai_test_df
-from src.timeline.io_utils import save_json
-from src.timeline.burst import compute_daily_counts, detect_burst_points
-from src.timeline.plot_counts import plot_daily_counts
-from src.timeline.timepoint_rank import rank_timepoints
-from src.timeline.export_timeline import build_timeline
+from timeline.evaluation import evaluate_timeline
+from timeline.io_utils import save_json
+from timeline.burst import compute_daily_counts, detect_burst_points
+from timeline.plot_counts import plot_daily_counts
+from timeline.timepoint_rank import rank_timepoints
+from timeline.export_timeline import build_timeline
 
 
 def token_contains(series: pd.Series, query: str) -> pd.Series:
@@ -51,6 +49,11 @@ def main():
     parser.add_argument("--max_eojel", type=int, default=17)
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--top_sentences", type=int, default=3)
+    parser.add_argument(
+        "--use_llm_summary",
+        action="store_true",
+        help="타임라인 시점별 LLM headline/summary 생성 사용"
+    )
     args = parser.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -62,11 +65,12 @@ def main():
         df = load_ai_test_df(limit=args.limit)
 
     print(f"[INFO] table={args.table}, loaded_rows={len(df)}")
-
-    print(df.columns.tolist())
+    print("[INFO] columns =", df.columns.tolist())
     print(df.head(3))
-    print(df[["title", "published"]].head(5))
-    
+
+    if "title" in df.columns and "published" in df.columns:
+        print(df[["title", "published"]].head(5))
+
     # 2) 필수 컬럼 기본 정리
     if "title" not in df.columns:
         df["title"] = ""
@@ -79,7 +83,6 @@ def main():
     df["body"] = df["body"].fillna("").astype(str)
 
     # 3) query 기반 필터링
-    # 연속 문자열 포함이 아니라, query 토큰들이 모두 포함되는지 검사
     title_mask = token_contains(df["title"], args.query)
     body_mask = token_contains(df["body"], args.query)
 
@@ -98,7 +101,10 @@ def main():
         save_json(
             {
                 "query": args.query,
+                "table": args.table,
+                "filtered_count": 0,
                 "burst_dates": [],
+                "timeline_evaluation": {},
                 "timeline": [],
                 "message": "No matching articles found."
             },
@@ -117,7 +123,10 @@ def main():
         save_json(
             {
                 "query": args.query,
+                "table": args.table,
+                "filtered_count": 0,
                 "burst_dates": [],
+                "timeline_evaluation": {},
                 "timeline": [],
                 "message": "No valid published dates found."
             },
@@ -153,22 +162,28 @@ def main():
         top_timepoints=args.top_timepoints,
         max_eojel=args.max_eojel,
         top_sentences=args.top_sentences,
-        alpha=args.alpha
+        alpha=args.alpha,
+        use_llm_summary=args.use_llm_summary,
     )
 
-    # 8) 결과 저장
+    # 8) 타임라인 평가
+    timeline_eval = evaluate_timeline(timeline)
+
+    # 9) 결과 저장
     save_json(
         {
             "query": args.query,
             "table": args.table,
             "filtered_count": int(len(df)),
             "burst_dates": burst_dates,
+            "timeline_evaluation": timeline_eval,
             "timeline": timeline
         },
         os.path.join(args.out_dir, "timeline_new.json")
     )
 
     print("[OK] Saved artifacts to:", args.out_dir)
+    print("[INFO] timeline_evaluation =", timeline_eval)
 
 
 if __name__ == "__main__":

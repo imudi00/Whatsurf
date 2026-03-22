@@ -27,3 +27,6 @@ data/emotion/*.zip
 data/emotion/*.tar
 data/emotion/*.tar.gz
 data/emotion/*.7z
+
+# timeline generated artifacts
+timeline/experiments/artifacts/
