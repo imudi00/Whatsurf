@@ -335,6 +335,8 @@ def call_groq_serial(
 
 def _fix_json_string(text: str) -> str:
     """LLM JSON 출력의 일반적인 문법 오류를 수정."""
+    # <think>...</think> 블록 제거 (Qwen3, llama-4 등 reasoning 모델)
+    text = re.sub(r'<think>[\s\S]*?</think>', '', text, flags=re.IGNORECASE).strip()
     # 마크다운 코드블록 제거
     text = re.sub(r'```(?:json)?\s*', '', text, flags=re.IGNORECASE)
     text = re.sub(r'```', '', text).strip()

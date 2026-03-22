@@ -4,9 +4,9 @@ Gemini 2.5 Pro — omission_risk 자동 라벨링
 맥락 추론이 필요한 고난도 피처. RPD 한도 내에서만 실행.
 
 omission_risk: 동종 클러스터 대비 핵심 정보 누락 정도
-  - low    : 핵심 사실·주체·수치 대부분 포함
-  - medium : 일부 중요 관점이나 수치 누락
-  - high   : 핵심 사실 혹은 주요 당사자 관점 대부분 누락
+  - low  : 핵심 사실·주체·수치 대부분 포함
+  - mid  : 일부 중요 관점이나 수치 누락
+  - high : 핵심 사실 혹은 주요 당사자 관점 대부분 누락
 
 배치 크기별 본문 압축:
   ≤5개  : 본문 400자
@@ -47,11 +47,11 @@ def label_omission_batch(target_articles: list, cluster_summaries: list) -> list
 
     prompt = (
         f"동종 이슈 기사들과 비교해 {len(target_articles)}개 기사의 omission_risk를 판단하세요.\n\n"
-        "omission_risk: low(핵심 대부분 포함) / medium(일부 누락) / high(핵심 다수 누락)\n\n"
+        "omission_risk: low(핵심 대부분 포함) / mid(일부 누락) / high(핵심 다수 누락)\n\n"
         f"## 클러스터 핵심 내용:\n{cluster_block}\n\n"
         f"## 분석 대상:\n{target_block}\n\n"
         "JSON 배열만 출력:\n"
-        "[{\"idx\":0,\"id\":\"...\",\"omission_risk\":\"low/medium/high\",\"omission_reason\":\"한줄\"},...]"
+        "[{\"idx\":0,\"id\":\"...\",\"omission_risk\":\"low/mid/high\",\"omission_reason\":\"한줄\"},...]"
     )
 
     results = call_gemini_pro_json(prompt)
@@ -61,11 +61,11 @@ def label_omission_batch(target_articles: list, cluster_summaries: list) -> list
 
     out = []
     for r in results:
-        if r.get("omission_risk") not in ("low", "medium", "high"):
-            r["omission_risk"] = "medium"
+        if r.get("omission_risk") not in ("low", "med", "high"):
+            r["omission_risk"] = "med"
         out.append(r)
 
     while len(out) < len(target_articles):
         out.append({"idx": len(out), "id": str(target_articles[len(out)].get("id", len(out))),
-                    "omission_risk": "medium", "omission_reason": ""})
+                    "omission_risk": "med", "omission_reason": ""})
     return out[:len(target_articles)]

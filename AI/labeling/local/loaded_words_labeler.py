@@ -7,47 +7,14 @@
   Tier-2: OPINION_WORDS 사전 (강한 평가/감정/신조어 포함 ㅋㅋ ㄷㄷ 등)
   Tier-3: 텍스트에서 직접 의미 있는 단어 추출 (salient fallback)
 """
-import re, sys
-from pathlib import Path
+import re
 from typing import List, Optional
 
-# ── feature_map loaded_words 사전 로드 ───────────────────────
-_loaded_words_imported = False
-for _p in [Path(__file__).resolve().parents[2], Path(__file__).resolve().parents[3]]:
-    _lw = _p / "feature_map" / "emotion" / "src" / "feature_map"
-    if (_lw / "loaded_words.py").exists():
-        if str(_lw) not in sys.path:
-            sys.path.insert(0, str(_lw))
-        try:
-            from loaded_words import (
-                detect_loaded_words, detect_opinion_words,
-                detect_informal_patterns, BIAS_WORDS, OPINION_WORDS,
-            )
-            _loaded_words_imported = True
-            break
-        except ImportError:
-            pass
-
-if not _loaded_words_imported:
-    # 인라인 fallback
-    import re as _re
-    BIAS_WORDS = [
-        "극우","극좌","빨갱이","종북","독재","선동","조작","가짜뉴스",
-        "재앙","파국","경악","공분","척결","타도","매국","협박",
-    ]
-    OPINION_WORDS = [
-        "최악","황당","어이없","기가막","뻔뻔","무능","미쳤","헛소리",
-        "최고","대박","완벽","진심","솔직히","레알","노답","개판",
-        "ㅋㅋ","ㅎㅎ","ㄷㄷ","ㅠㅠ","ㅜㅜ","ㅡㅡ","ㄹㅇ","ㅂㄷ",
-    ]
-    _CONSONANT_RE = _re.compile(r'[ㄱ-ㅎㅏ-ㅣ]{2,}')
-
-    def detect_loaded_words(text):
-        return [w for w in BIAS_WORDS if w in text]
-    def detect_opinion_words(text):
-        return [w for w in OPINION_WORDS if w in text]
-    def detect_informal_patterns(text):
-        return list(dict.fromkeys(_CONSONANT_RE.findall(text)))
+# ── features/loaded_words 사전 로드 ──────────────────────────
+from labeling.features.loaded_words import (
+    detect_loaded_words, detect_opinion_words,
+    detect_informal_patterns, BIAS_WORDS, OPINION_WORDS,
+)
 
 
 # ── Tier-3 Fallback: 텍스트에서 직접 추출 ─────────────────────
@@ -148,8 +115,8 @@ def label_loaded_words_batch(
         r = _extract_all(text, max_words=max_words, min_guaranteed=min_guaranteed)
         results.append({
             "loaded_words":        r["words"],
-            "loaded_word_density": r["density"],
-            "is_biased":           r["tier_used"] <= 2 and len(r["words"]) > 0,
+            "loaded_word_density": r["density"], 
+            "is_biased":           r["tier_used"] <= 2 and len(r["words"]) > 0, 
             "tier":                r["tier_used"],
         })
     return results

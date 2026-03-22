@@ -8,6 +8,9 @@
     python AI/labeling/run_labeling.py --keyword 종소세 --features emotion stance loaded_words
     python AI/labeling/run_labeling.py --keyword 종소세 --features frame logic bias omission
 
+    --resume 옵션 추가 (중단된 라벨링 재개용)
+    --skip_comments 옵션 추가 (댓글 라벨링 건너뜀)
+
 피처별 처리 담당:
     emotion, stance, loaded_words  → 로컬 HuggingFace (7~13B)
     frame, logic, bias_x, bias_y  → Groq Llama 3.3 70B
@@ -40,7 +43,7 @@ from source.config.supabase_client import supabase
 from labeling.research_report import ResearchReport
 
 # 기사 피처 (emotion은 댓글 파이프라인에서 처리)
-ALL_FEATURES = ["stance", "loaded_words", "frame", "logic", "bias", "omission"]
+ALL_FEATURES = ["stance", "loaded_words", "body_depth", "frame", "logic", "bias", "omission"]
 
 
 # ──────────────────────────────────────────────────────────
@@ -48,7 +51,7 @@ ALL_FEATURES = ["stance", "loaded_words", "frame", "logic", "bias", "omission"]
 # ──────────────────────────────────────────────────────────
 
 def load_by_keyword(keyword: str, limit: int) -> list[dict]:
-    """limit=0 이면 전체 페이지 가져옴."""
+    """ai_test 테이블에서 keyword로 로드. limit=0 이면 전체."""
     PAGE_SIZE = 1000
     rows: list = []
     offset = 0
@@ -72,6 +75,70 @@ def load_by_keyword(keyword: str, limit: int) -> list[dict]:
             try: c = json.loads(c)
             except: c = []
         row["comments"] = c
+    return rows
+
+
+def load_by_query_id(query_id: str, limit: int) -> list[dict]:
+    """
+    Supabase2 articles 테이블에서 query_id로 로드.
+    각 기사의 댓글은 comments 테이블(article_id 공유)에서 cmt_content 로 가져옴.
+    limit=0 이면 전체.
+    """
+    from source.config.supabase2_client import supabase2
+    from collections import defaultdict
+
+    # ── 기사 로드 ────────────────────────────────────────
+    PAGE_SIZE = 1000
+    rows: list = []
+    offset = 0
+    while True:
+        fetch = PAGE_SIZE if limit == 0 else min(PAGE_SIZE, limit - len(rows))
+        resp = (
+            supabase2.table("articles")
+            .select("id, query_id, title, body_text")
+            .eq("query_id", query_id)
+            .range(offset, offset + fetch - 1)
+            .execute()
+        )
+        page = resp.data or []
+        rows.extend(page)
+        if len(page) < fetch or (limit > 0 and len(rows) >= limit):
+            break
+        offset += fetch
+    if limit > 0:
+        rows = rows[:limit]
+
+    # 컬럼 정규화
+    for r in rows:
+        r["body"] = r.pop("body_text", "") or ""
+
+    # ── 댓글 로드 (comments 테이블, article_id 기준) ──────
+    print("  [Supabase2] comments 테이블 로드 중...")
+    article_ids = [r["id"] for r in rows]
+    comments_by_article: dict = defaultdict(list)
+
+    CMT_BATCH = 100  # in_ 필터 1회 최대
+    for i in range(0, len(article_ids), CMT_BATCH):
+        batch_ids = article_ids[i:i + CMT_BATCH]
+        cmt_resp = (
+            supabase2.table("comments")
+            .select("id, article_id, cmt_content")
+            .in_("article_id", batch_ids)
+            .execute()
+        )
+        for c in (cmt_resp.data or []):
+            # content 키로 정규화해 두면 _process_one_article_comments 가 자동 인식
+            comments_by_article[c["article_id"]].append({
+                "id":      c["id"],          # DB PK → 업로드 시 사용
+                "content": c["cmt_content"],
+            })
+
+    total_cmts = sum(len(v) for v in comments_by_article.values())
+    print(f"  → 댓글 {total_cmts}개 로드 완료")
+
+    for r in rows:
+        r["comments"] = comments_by_article.get(r["id"], [])
+
     return rows
 
 
@@ -128,8 +195,17 @@ def _run_groq_block(
                     report.record_api_call("groq")
                 except Exception as e:
                     report.record_retry("groq", str(e))
-                    print(f"  [경고] frame/logic 배치 실패 (건너뜀): {e}")
-                    results = [{"frame": None, "logic": None, "frame_reason": "api_error", "logic_reason": "api_error"} for _ in batch_structs]
+                    print(f"  [경고] frame/logic 배치 실패 → 1개씩 재시도: {e}")
+                    results = []
+                    for j, single_struct in enumerate(batch_structs):
+                        try:
+                            res = label_frame_logic_batch([single_struct])
+                            results.append(res[0])
+                            report.record_api_call("groq")
+                        except Exception as e2:
+                            print(f"    [경고] 단일 실패 (idx={start+j}): {e2}")
+                            results.append({"frame": None, "logic": None,
+                                            "frame_reason": "api_error", "logic_reason": "api_error"})
 
             try:
                 from labeling.groq.groq_client import last_call_info as _g_info
@@ -180,8 +256,16 @@ def _run_groq_block(
                     report.record_api_call("groq")
                 except Exception as e:
                     report.record_retry("groq", str(e))
-                    print(f"  [경고] bias 배치 실패 (건너뜀): {e}")
-                    results = [{"bias_x": None, "bias_y": None, "bias_reason": "api_error"} for _ in batch_structs]
+                    print(f"  [경고] bias 배치 실패 → 1개씩 재시도: {e}")
+                    results = []
+                    for j, single_struct in enumerate(batch_structs):
+                        try:
+                            res = label_bias_batch([single_struct])
+                            results.append(res[0])
+                            report.record_api_call("groq")
+                        except Exception as e2:
+                            print(f"    [경고] 단일 실패 (idx={start+j}): {e2}")
+                            results.append({"bias_x": None, "bias_y": None, "bias_reason": "api_error"})
 
             try:
                 from labeling.groq.groq_client import last_call_info as _g_info
@@ -275,8 +359,16 @@ def _run_gemini_block(
                     report.record_api_call("gemini_pro")
                 except Exception as e:
                     report.record_retry("gemini_pro", str(e))
-                    print(f"  [경고] omission 배치 실패 (건너뜀): {e}")
-                    results = [{"omission_risk": None, "omission_reason": str(e)} for _ in batch_articles]
+                    print(f"  [경고] omission 배치 실패 → 1개씩 재시도: {e}")
+                    results = []
+                    for j, single_article in enumerate(batch_articles):
+                        try:
+                            res = label_omission_batch([single_article], batch_cluster)
+                            results.append(res[0])
+                            report.record_api_call("gemini_pro")
+                        except Exception as e2:
+                            print(f"    [경고] 단일 실패 (idx={start+j}): {e2}")
+                            results.append({"omission_risk": None, "omission_reason": "api_error"})
 
             try:
                 from labeling.gemini.gemini_client import last_call_info as _gem_info
@@ -311,13 +403,28 @@ def _run_gemini_block(
 def run_labeling(rows: list[dict], features: list[str], batch_size: int,
                  out_dir: str, report: ResearchReport,
                  max_gemini: int = 200,
-                 parallel: bool = True):
+                 parallel: bool = True,
+                 resume: bool = False):
 
     texts  = [f"{r['title']}\n\n{r['body']}" for r in rows]
     ids    = [str(r["id"]) for r in rows]
-    label_map = {aid: {"article_id": aid, "title": rows[i].get("title", "")}
-                 for i, aid in enumerate(ids)}
     keyword = report.keyword
+
+    # ── resume: 기존 _labeled.json 로드해서 label_map 초기화 ──
+    label_map: dict[str, dict] = {}
+    for i, aid in enumerate(ids):
+        base = {"article_id": aid, "title": rows[i].get("title", "")}
+        if resume:
+            path = os.path.join(out_dir, f"{keyword}_{aid}_labeled.json")
+            if os.path.exists(path):
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        existing = json.load(f)
+                    base = existing  # 기존 피처 전부 유지
+                    print(f"  [resume] 기존 로드: {os.path.basename(path)}")
+                except Exception as e:
+                    print(f"  [resume] 로드 실패 ({aid}): {e}")
+        label_map[aid] = base
 
     # 텍스트/댓글 통계 기록
     comment_counts = [len(r.get("comments") or []) for r in rows]
@@ -351,6 +458,22 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
 
         print(f"  → {len(texts)}개 완료")
 
+    # ── 2. 로컬: body_depth (수식 기반, 모델 미사용) ────────
+    if "body_depth" in features:
+        print("\n[로컬] body_depth 계산 (수식 기반)...")
+        from labeling.local.body_depth import compute_body_depth, describe_body_depth
+        t0 = time.time()
+        for i, (aid, text) in enumerate(zip(ids, texts)):
+            score = compute_body_depth(text)
+            label_map[aid].update({
+                "body_depth":       score,
+                "body_depth_label": describe_body_depth(score),
+            })
+            report.record_labels("body_depth", [score])
+        elapsed = time.time() - t0
+        print(f"  → {len(texts)}개 완료 ({elapsed:.1f}s)")
+        _save_partial(label_map, ids, out_dir, keyword)
+
     # ── 3. 로컬: loaded_words ─────────────────────────────
     if "loaded_words" in features:
         print("\n[로컬] loaded_words 라벨링...")
@@ -361,7 +484,7 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
             n = len(batch_texts)
 
             with report.time_feature("loaded_words")(n):
-                results = label_loaded_words_batch(batch_texts)
+                results =  (batch_texts)
 
             for i, res in enumerate(results):
                 aid = batch_ids[i]
@@ -388,27 +511,33 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
 
     structs: list = []
     if needs_groq:
-        from feature_map.stance.src.feature_map.preprocessor import build_article_struct
+        from labeling.features.preprocessor import build_article_struct
         structs = [build_article_struct(t) for t in texts]
 
     # ── 사전 계산: cluster_entity_lists (Gemini에서 사용) ─
+    # 기사별 NER을 1회씩만 수행(O(n)), 전체에서 ≥30% 출현 엔티티를 공통 클러스터로 사용
     cluster_entity_lists: list = []
     if needs_gemini:
-        from feature_map.context.src.feature_map.keyword_extractor import extract_features
+        from labeling.features.keyword_extractor import extract_features
         from collections import Counter
-        for i in range(len(texts)):
-            counter = Counter()
-            cluster = [texts[j] for j in range(len(texts)) if j != i]
-            for ct in cluster:
-                try:
-                    feats = extract_features(ct)
-                    for e in feats["entities"]:
-                        counter[e["word"]] += 1
-                except Exception:
-                    continue
-            total = max(len(cluster), 1)
-            core  = [ent for ent, cnt in counter.items() if cnt/total >= 0.3]
-            cluster_entity_lists.append(core)
+
+        print("  [Gemini 전처리] 클러스터 엔티티 추출 중 (기사당 1회)...")
+        all_entities: list[list[str]] = []
+        for idx, t in enumerate(texts):
+            try:
+                feats = extract_features(t)
+                ents  = [e["word"] for e in feats.get("entities", [])]
+            except Exception:
+                ents = []
+            all_entities.append(ents)
+            if (idx + 1) % 20 == 0 or (idx + 1) == len(texts):
+                print(f"    {idx+1}/{len(texts)} 완료")
+
+        total   = max(len(texts), 1)
+        counter = Counter(e for ents in all_entities for e in ents)
+        core    = [ent for ent, cnt in counter.items() if cnt / total >= 0.3]
+        print(f"  → 핵심 엔티티 {len(core)}개: {core[:10]}{'...' if len(core) > 10 else ''}")
+        cluster_entity_lists = [core] * len(texts)
 
     # ── API 블록 실행 (parallel or sequential) ────────────
     groq_result:   dict[str, dict] = {}
@@ -571,16 +700,30 @@ def _process_one_article_comments(row: dict, out_dir: str, keyword: str,
 def run_comments_labeling(rows: list[dict], out_dir: str, keyword: str,
                           cmt_batch_size: int = 32,
                           report: ResearchReport | None = None,
-                          parallel_workers: int = 4):
+                          parallel_workers: int = 4,
+                          resume: bool = False):
     """
     각 기사의 댓글마다 cmt_emotion / cmt_words 추출 후
     {out_dir}/{keyword}_{id}_comments.json 으로 저장.
 
     로컬 전용 (API 미사용). parallel_workers 수만큼 기사를 동시에 처리.
+    resume=True 이면 이미 _comments.json 이 존재하는 기사는 건너뜀.
     """
     os.makedirs(out_dir, exist_ok=True)
     report_lock = threading.Lock() if parallel_workers > 1 else None
     active_rows = [r for r in rows if (r.get("comments") or [])]
+
+    if resume:
+        before = len(active_rows)
+        active_rows = [
+            r for r in active_rows
+            if not os.path.exists(
+                os.path.join(out_dir, f"{keyword}_{r['id']}_comments.json")
+            )
+        ]
+        skipped = before - len(active_rows)
+        if skipped:
+            print(f"  [resume] 이미 완료된 댓글 {skipped}개 건너뜀")
 
     if not active_rows:
         print("  댓글이 있는 기사 없음, 건너뜀.")
@@ -614,28 +757,54 @@ def run_comments_labeling(rows: list[dict], out_dir: str, keyword: str,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="자동 라벨링 파이프라인")
-    ap.add_argument("--keyword",    required=True)
+
+    # ── 데이터 소스 ───────────────────────────────────────
+    ap.add_argument(
+        "--source", choices=["ai_test", "supabase2"], default="ai_test",
+        help="데이터 소스 (기본: ai_test / 신규: supabase2)",
+    )
+    ap.add_argument(
+        "--keyword",
+        help="ai_test 소스: keyword 필드 값 (--source ai_test 에서 필수)",
+    )
+    ap.add_argument(
+        "--query_id",
+        help="supabase2 소스: query_id 필드 값 (--source supabase2 에서 필수)",
+    )
+
+    # ── 피처 / 처리 옵션 ─────────────────────────────────
     ap.add_argument("--features",   nargs="+", default=["all"],
                     help=f"라벨링 피처. 'all' 또는 {ALL_FEATURES}")
     ap.add_argument("--limit",        type=int, default=0,
                     help="처리할 기사 수 (기본: 0 = 전체)")
     ap.add_argument("--offset",       type=int, default=0,
                     help="앞에서 N개 건너뜀 (대용량 재개용, 기본: 0)")
-    ap.add_argument("--batch_size",   type=int, default=20,
-                    help="API 1회 호출당 기사 수 (기본: 20 / Groq 권장 10~30)")
+    ap.add_argument("--batch_size",   type=int, default=100,
+                    help="API 1회 호출당 기사 수 (기본: 100)")
     ap.add_argument("--cmt_batch",    type=int, default=32,
                     help="댓글 로컬 처리 배치 크기 (기본: 32)")
     ap.add_argument("--cmt_workers",  type=int, default=4,
                     help="댓글 병렬 처리 worker 수 (기본: 4)")
-    ap.add_argument("--max_gemini",   type=int, default=200,
-                    help="이번 실행에서 Gemini로 처리할 최대 기사 수 (기본: 200, 0=무제한)")
+    ap.add_argument("--max_gemini",   type=int, default=0,
+                    help="Gemini 최대 처리 건수 (기본: 0=무제한)")
     ap.add_argument("--skip_comments", action="store_true",
                     help="댓글 라벨링 건너뜀")
+    ap.add_argument("--resume",        action="store_true",
+                    help="기존 _labeled.json/_comments.json 유지 + 지정 피처만 추가")
     ap.add_argument("--no_parallel",  action="store_false", dest="parallel",
                     help="Groq/Gemini 병렬 실행 비활성화 (순차 실행)")
     ap.set_defaults(parallel=True)
     ap.add_argument("--out_dir",     default="./label_results")
     args = ap.parse_args()
+
+    # ── 소스별 필수 인자 검증 ─────────────────────────────
+    if args.source == "ai_test" and not args.keyword:
+        ap.error("--source ai_test 일 때 --keyword 가 필요합니다.")
+    if args.source == "supabase2" and not args.query_id:
+        ap.error("--source supabase2 일 때 --query_id 가 필요합니다.")
+
+    # 리포트용 식별자 (keyword or query_id)
+    run_label = args.keyword if args.source == "ai_test" else args.query_id
 
     features = ALL_FEATURES if "all" in args.features else args.features
     invalid  = [f for f in features if f not in ALL_FEATURES]
@@ -643,23 +812,28 @@ if __name__ == "__main__":
         print(f"알 수 없는 피처: {invalid}\n사용 가능: {ALL_FEATURES}")
         sys.exit(1)
 
-    print(f"\n{'='*55}")
-    print(f"  keyword={args.keyword!r}  features={features}")
+    print(f"\n{'='*60}")
+    print(f"  source={args.source!r}  label={run_label!r}")
+    print(f"  features={features}")
     print(f"  limit={args.limit}  offset={args.offset}  batch_size={args.batch_size}")
     print(f"  댓글 배치={args.cmt_batch}  댓글 workers={args.cmt_workers}  댓글 스킵={args.skip_comments}")
-    print(f"  max_gemini={args.max_gemini} (0=무제한)")
-    print(f"  parallel={args.parallel}")
-    print(f"{'='*55}\n")
+    print(f"  max_gemini={args.max_gemini} (0=무제한)  parallel={args.parallel}")
+    print(f"{'='*60}\n")
 
     # 리포트 초기화
     report = ResearchReport(
-        keyword=args.keyword,
+        keyword=run_label,
         limit=args.limit,
         batch_size=args.batch_size,
     )
 
-    print("[1] Supabase ai_test 로드...")
-    rows = load_by_keyword(args.keyword, args.limit)
+    # ── 데이터 로드 ───────────────────────────────────────
+    if args.source == "ai_test":
+        print("[1] Supabase ai_test 로드...")
+        rows = load_by_keyword(args.keyword, args.limit)
+    else:
+        print("[1] Supabase2 articles 로드...")
+        rows = load_by_query_id(args.query_id, args.limit)
     print(f"    → 전체 {len(rows)}개")
 
     # offset 적용 (대용량 재개용)
@@ -671,18 +845,23 @@ if __name__ == "__main__":
     if not rows:
         print("처리할 데이터 없음."); sys.exit(0)
 
+    if args.resume:
+        print("  [resume 모드] 기존 결과 유지 + 지정 피처만 추가\n")
+
     print("[2] 기사 라벨링 시작...")
     try:
         run_labeling(rows, features, args.batch_size, args.out_dir, report,
                      max_gemini=args.max_gemini,
-                     parallel=args.parallel)
+                     parallel=args.parallel,
+                     resume=args.resume)
     except Exception as _article_err:
         print(f"\n[경고] 기사 라벨링 중 오류 발생 (댓글 라벨링은 계속 진행):\n  {_article_err}\n")
 
     if not args.skip_comments:
         print("\n[3] 댓글 라벨링 시작 (cmt_emotion + cmt_words)...")
-        run_comments_labeling(rows, args.out_dir, args.keyword, args.cmt_batch,
-                              report, parallel_workers=args.cmt_workers)
+        run_comments_labeling(rows, args.out_dir, run_label, args.cmt_batch,
+                              report, parallel_workers=args.cmt_workers,
+                              resume=args.resume)
     else:
         print("\n[3] 댓글 라벨링 건너뜀 (--skip_comments)")
 
