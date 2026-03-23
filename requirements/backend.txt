@@ -21,3 +21,4 @@ asyncio
 fastapi
 uvicorn
 pydantic
+flask-cors #cors
