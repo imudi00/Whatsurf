@@ -1,0 +1,31 @@
+# 1. Deep Learning & NLP Models (KPF-BERT-NER 등 허깅페이스 모델 구동용)
+torch
+transformers
+datasets
+sentence_transformers
+
+# 2. Korean NLP & Text Processing (한국어 전처리 및 통계 기반 피처 추출)
+konlpy
+soynlp
+
+# 3. LLM API (GPT-4o-mini 또는 Claude를 활용한 frame, stance 분석용)
+openai
+anthropic
+python-dotenv
+google-generativeai
+google-genai
+python-dotenv
+
+# 4. Data Processing & Knowledge Graph (omission_risk 노드 매핑 및 데이터 연산)
+pandas
+numpy
+networkx
+preprocessor
+matplotlib
+hdbscan
+
+# 5. Utility
+tqdm
+
+# 6. db
+supabase

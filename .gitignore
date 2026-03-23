@@ -11,6 +11,7 @@ __pycache__/
 
 # VS Code 설정 폴더
 .vscode/
+<<<<<<< HEAD
 # ------------------------
 
 
@@ -22,3 +23,41 @@ __pycache__/
 # --- AI Settings ---
 # 중간에 작성하면 됨
 # ------------------------
+=======
+
+# --- AI Settings ---
+file/
+AI/data/
+
+# venv
+venv/
+.venv/
+AI/venv/
+AI/.venv/
+
+# Experiment outputs
+experiments/artifacts/
+experiment_log.csv
+
+# Legacy emotion paths (old)
+emotion/artifacts/
+AI_test1/emotion/artifacts/
+
+# New emotion test module outputs
+ai_emotion_test/artifacts/
+ai_emotion_test/**/__pycache__/
+
+# Emotion datasets (do not commit large raw archives)
+data/emotion/raw/
+data/emotion/*.zip
+data/emotion/*.tar
+data/emotion/*.tar.gz
+data/emotion/*.7z
+
+# timeline generated artifacts
+timeline/experiments/artifacts/
+
+# Labeling output (large, runtime-generated)
+label_results/
+주간학습보고서/
+>>>>>>> origin/ai_ver1
