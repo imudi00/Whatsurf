@@ -56,7 +56,7 @@ def save_timeline_entry(
         "query_id":      query_id,
         "timeline_date": timeline_date,
         "top_art":       top_art,
-        "created_at":    datetime.now(timezone.utc).isoformat(),
+        "created_at":    datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
     }
     data = _safe_insert("queries_timeline", row)
     return int(data["id"])

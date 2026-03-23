@@ -34,7 +34,7 @@ def save_cluster(
         "cluster_title":   cluster_title,
         "cluster_summary": cluster_summary,
         "rep_article_id":  rep_article_id,
-        "created_at":      datetime.now(timezone.utc).isoformat(),
+        "created_at":      datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
     }
     if frame_id is not None:
         row["frame_id"] = frame_id
