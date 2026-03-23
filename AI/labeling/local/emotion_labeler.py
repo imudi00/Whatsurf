@@ -62,7 +62,7 @@ class LocalEmotionLabeler:
         """한국어/영어 → 통일된 영어 레이블. 매핑 없으면 원본 반환."""
         return _KO_TO_EN.get(raw, raw)
 
-    def label_batch(self, texts: List[str]) -> List[dict]:
+    def label_batch(self , texts: List[str]) -> List[dict]:
         import torch, numpy as np
         results = []
         for text in texts:

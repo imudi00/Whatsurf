@@ -45,6 +45,63 @@ from labeling.research_report import ResearchReport
 # 기사 피처 (emotion은 댓글 파이프라인에서 처리)
 ALL_FEATURES = ["stance", "loaded_words", "body_depth", "frame", "logic", "bias", "omission"]
 
+# 피처별 api_error 판별 필드
+_ERROR_FIELDS: dict[str, list[str]] = {
+    "frame":    ["frame_reason", "logic_reason"],
+    "logic":    ["frame_reason", "logic_reason"],
+    "bias":     ["bias_rationale"],
+    "omission": ["omission_reason"],
+    "stance":   ["stance_score"],
+}
+
+def _is_error(data: dict, feature: str) -> bool:
+    """해당 피처가 api_error 또는 미처리(null) 상태인지 확인."""
+    fields = _ERROR_FIELDS.get(feature, [])
+    for field in fields:
+        val = data.get(field)
+        if val == "api_error" or val is None:
+            return True
+    # frame/logic/bias/omission 결과값 자체도 체크
+    direct = {
+        "frame":    "frame",
+        "logic":    "logic",
+        "bias":     "bias_x",
+        "omission": "omission_risk",
+        "stance":   "stance_score",
+    }
+    key = direct.get(feature)
+    if key and data.get(key) is None:
+        return True
+    return False
+
+
+def find_error_articles(out_dir: str, keyword: str, features: list[str]) -> dict[str, set[str]]:
+    """
+    out_dir 안의 {keyword}_*_labeled.json 을 스캔하여
+    feature별 api_error / null 상태인 article_id set을 반환.
+
+    반환: {"frame": {"123","456",...}, "bias": {...}, ...}
+    """
+    import glob
+    pattern = os.path.join(out_dir, f"{keyword}_*_labeled.json")
+    files = glob.glob(pattern)
+
+    errors: dict[str, set[str]] = {f: set() for f in features}
+    for path in files:
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            continue
+        aid = str(data.get("article_id", ""))
+        if not aid:
+            continue
+        for feat in features:
+            if feat in _ERROR_FIELDS and _is_error(data, feat):
+                errors[feat].add(aid)
+
+    return errors
+
 
 # ──────────────────────────────────────────────────────────
 # Supabase 로드
@@ -484,7 +541,7 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
             n = len(batch_texts)
 
             with report.time_feature("loaded_words")(n):
-                results =  (batch_texts)
+                results = label_loaded_words_batch(batch_texts)
 
             for i, res in enumerate(results):
                 aid = batch_ids[i]
@@ -791,6 +848,8 @@ if __name__ == "__main__":
                     help="댓글 라벨링 건너뜀")
     ap.add_argument("--resume",        action="store_true",
                     help="기존 _labeled.json/_comments.json 유지 + 지정 피처만 추가")
+    ap.add_argument("--retry_errors",  action="store_true",
+                    help="api_error / null 인 피처만 골라서 재시도 (resume 자동 활성화)")
     ap.add_argument("--no_parallel",  action="store_false", dest="parallel",
                     help="Groq/Gemini 병렬 실행 비활성화 (순차 실행)")
     ap.set_defaults(parallel=True)
@@ -847,6 +906,32 @@ if __name__ == "__main__":
 
     if args.resume:
         print("  [resume 모드] 기존 결과 유지 + 지정 피처만 추가\n")
+
+    # ── retry_errors: api_error / null 항목만 필터링 ──────────
+    if args.retry_errors:
+        args.resume = True  # 기존 값 보존 필수
+        retryable = [f for f in features if f in _ERROR_FIELDS]
+        error_map = find_error_articles(args.out_dir, run_label, retryable)
+
+        # 재시도 대상 ID 합집합
+        all_error_ids = set()
+        for feat, ids_set in error_map.items():
+            all_error_ids |= ids_set
+
+        if not all_error_ids:
+            print("  [retry_errors] api_error 항목 없음 — 재시도 불필요.\n")
+        else:
+            # 피처별 에러 현황 출력
+            print("  [retry_errors] api_error 감지:")
+            for feat, ids_set in error_map.items():
+                if ids_set:
+                    print(f"    {feat}: {len(ids_set)}건")
+
+            # rows를 에러 ID만으로 필터링
+            rows = [r for r in rows if str(r["id"]) in all_error_ids]
+            # features도 실제 에러가 있는 피처만으로 축소
+            features = [f for f in features if error_map.get(f)]
+            print(f"  → 재시도 대상: {len(rows)}개 기사, 피처: {features}\n")
 
     print("[2] 기사 라벨링 시작...")
     try:
