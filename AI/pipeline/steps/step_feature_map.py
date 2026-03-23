@@ -20,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-_RUN_LABELING = Path(__file__).resolve().parents[3] / "labeling" / "run_labeling.py"
+_RUN_LABELING = Path(__file__).resolve().parents[2] / "labeling" / "run_labeling.py"
 
 
 def run_feature_map_step(
