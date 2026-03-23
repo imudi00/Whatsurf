@@ -40,11 +40,10 @@ if not found_env:
     load_dotenv()
 # [여기까지 교체 끝]
 
-# 수정 후 (가장 안정적인 모델들로 변경)
 MODEL_FALLBACK_LIST: list = [
-    os.getenv("LLM_MODEL_1", "gemini-2.0-flash"),      # 현재 가장 빠르고 안정적
-    os.getenv("LLM_MODEL_2", "gemini-1.5-flash"),      # 범용적인 모델
-    os.getenv("LLM_MODEL_3", "gemini-1.5-pro"),        # 성능이 좋은 모델
+    os.getenv("LLM_MODEL_1", "gemini-2.5-flash-lite"),
+    os.getenv("LLM_MODEL_2", "gemini-2.0-flash-lite"),
+    os.getenv("LLM_MODEL_3", "gemini-1.5-flash-8b"),
 ]
 CALL_INTERVAL_SEC: float = float(os.getenv("LLM_CALL_INTERVAL_SEC", "7"))
 MAX_RETRIES:       int   = int(os.getenv("LLM_MAX_RETRIES", "4"))
