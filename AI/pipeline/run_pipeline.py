@@ -9,7 +9,8 @@ queries 테이블의 검색어 하나(query_id)를 받아 3단계 분석을 순�
     2. [Clustering]  SBERT → UMAP → HDBSCAN → LLM 요약
                      → article_clusters 저장 + articles.cluster_label 업데이트
     3. [Feature Map] labeling 파이프라인(frame/logic/bias/omission/stance…)
-                     → article_features 저장  (run_labeling.py 위임)
+                     → label_results/ 로컬 JSON 저장
+                     → article_features upsert + comments upsert (자동)
     4. [Timeline]    TTP/ETP 랭킹 → 상위 시점 선정
                      → queries_timeline 저장
 
@@ -22,6 +23,9 @@ CLI 예시:
 
     # 피처맵 피처 지정
     python -m AI.pipeline.run_pipeline --query_id 15 --features frame logic stance
+
+    # DB 업로드 없이 로컬 JSON만 저장
+    python -m AI.pipeline.run_pipeline --query_id 15 --no_upload
 
     # 타임라인 top_n 조정
     python -m AI.pipeline.run_pipeline --query_id 15 --top_timepoints 10
@@ -110,6 +114,7 @@ def run_pipeline(
     resume: bool = True,
     skip_comments: bool = False,
     out_dir: str = "./label_results",
+    upload: bool = True,
 ) -> dict:
     """
     Args:
@@ -121,6 +126,7 @@ def run_pipeline(
         resume:         feature_map 중단 재개 여부
         skip_comments:  feature_map 댓글 건너뜀 여부
         out_dir:        feature_map 라벨 JSON 출력 디렉토리
+        upload:         feature_map 완료 후 DB 자동 업로드 여부 (기본: True)
 
     Returns:
         각 스텝 결과 요약 dict
@@ -176,10 +182,17 @@ def run_pipeline(
             resume=resume,
             skip_comments=skip_comments,
             out_dir=out_dir,
+            upload=upload,
         )
         elapsed = time.time() - t0
-        status = "✓ 완료" if results["feature_map"]["success"] else "✕ 실패"
-        print(f"  → {status} ({elapsed:.1f}s)")
+        fm = results["feature_map"]
+        status = "✓ 완료" if fm["success"] else "✕ 실패"
+        upload_status = ""
+        if upload:
+            art = "✓" if fm["upload_articles"] else "✕"
+            cmt = "skip" if skip_comments else ("✓" if fm["upload_comments"] else "✕")
+            upload_status = f" | DB 업로드 article:{art} comment:{cmt}"
+        print(f"  → {status} ({elapsed:.1f}s){upload_status}")
 
     # ── Step 3: Timeline ────────────────────────────────────
     if "timeline" in steps:
@@ -203,13 +216,19 @@ def run_pipeline(
 
     print("\n" + "=" * 60)
     print(f"  파이프라인 완료 — 총 {total_sec:.1f}초")
-    if "clustering"  in results:
+    if "clustering" in results:
         c = results["clustering"]
         print(f"  [Clustering]  클러스터 {c['cluster_count']}개 | 노이즈 {c['noise_count']}건")
     if "feature_map" in results:
-        f = results["feature_map"]
-        print(f"  [FeatureMap]  {'성공' if f['success'] else '실패'} | 피처: {f['features']}")
-    if "timeline"    in results:
+        fm = results["feature_map"]
+        label_ok = "성공" if fm["success"] else "실패"
+        if upload:
+            art = "✓" if fm["upload_articles"] else "✕"
+            cmt = "skip" if skip_comments else ("✓" if fm["upload_comments"] else "✕")
+            print(f"  [FeatureMap]  라벨링:{label_ok} | DB article:{art} comment:{cmt} | 피처:{fm['features']}")
+        else:
+            print(f"  [FeatureMap]  {label_ok} | 피처: {fm['features']} (DB 업로드 스킵)")
+    if "timeline" in results:
         tl = results["timeline"]
         print(f"  [Timeline]    {tl['saved_count']}개 날짜 저장")
     print("=" * 60)
@@ -266,6 +285,10 @@ def _parse_args() -> argparse.Namespace:
         "--out_dir", default="./label_results",
         help="feature_map 라벨 JSON 출력 경로",
     )
+    ap.add_argument(
+        "--no_upload", action="store_true",
+        help="feature_map 완료 후 DB 업로드 건너뜀 (로컬 JSON만 저장)",
+    )
     return ap.parse_args()
 
 
@@ -280,4 +303,5 @@ if __name__ == "__main__":
         resume=not args.no_resume,
         skip_comments=args.skip_comments,
         out_dir=args.out_dir,
+        upload=not args.no_upload,
     )
