@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv  # [추가]
 
 # clustering 모듈 경로 등록
 _CLUSTERING_SRC = Path(__file__).resolve().parents[2] / "clustering" / "src"

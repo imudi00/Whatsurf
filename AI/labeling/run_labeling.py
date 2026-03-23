@@ -24,6 +24,7 @@
 import argparse, json, os, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Optional
 
 # ── sys.path 설정 ──────────────────────────────────────────
 _HERE = Path(__file__).resolve().parent   # AI/labeling/
@@ -680,7 +681,7 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
 def _process_one_article_comments(row: dict, out_dir: str, keyword: str,
                                    cmt_batch_size: int,
                                    report: ResearchReport | None,
-                                   report_lock: threading.Lock | None) -> str:
+                                   report_lock: Optional[threading.Lock]) -> str:
     """
     단일 기사의 댓글을 처리하고 저장. run_comments_labeling에서 병렬 호출됨.
     반환: 저장된 파일 경로 (댓글 없으면 "")

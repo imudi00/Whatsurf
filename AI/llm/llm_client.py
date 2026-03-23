@@ -17,6 +17,7 @@ RPM / TPM / RPD 예외처리 및 모델 자동 폴백
     LLM_CALL_INTERVAL_SEC=7
     LLM_MAX_RETRIES=4
 """
+
 import os, re, time, json
 from pathlib import Path
 from dotenv import load_dotenv
@@ -24,31 +25,74 @@ from google import genai
 from google.genai import errors as genai_errors
 
 # .env 탐색: llm/ → AI/ → 프로젝트루트
-for _p in [Path(__file__).resolve().parents[1], Path(__file__).resolve().parents[2]]:
+# [여기서부터 교체 시작]
+# .env 탐색: 현재 파일 위치에서 위로 4단계까지 올라가며 찾습니다.
+found_env = False
+for i in range(1, 5):
+    _p = Path(__file__).resolve().parents[i]
     if (_p / ".env").exists():
-        load_dotenv(_p / ".env"); break
+        load_dotenv(_p / ".env")
+        found_env = True
+        break
 
+# 만약 위에서 못 찾았다면 현재 실행 중인 폴더(루트)에서 마지막으로 시도합니다.
+if not found_env:
+    load_dotenv()
+# [여기까지 교체 끝]
+
+# 수정 후 (가장 안정적인 모델들로 변경)
 MODEL_FALLBACK_LIST: list = [
-    os.getenv("LLM_MODEL_1", "gemini-2.5-flash-lite"),
-    os.getenv("LLM_MODEL_2", "gemini-2.0-flash-lite"),
-    os.getenv("LLM_MODEL_3", "gemini-1.5-flash-8b"),
+    os.getenv("LLM_MODEL_1", "gemini-2.0-flash"),      # 현재 가장 빠르고 안정적
+    os.getenv("LLM_MODEL_2", "gemini-1.5-flash"),      # 범용적인 모델
+    os.getenv("LLM_MODEL_3", "gemini-1.5-pro"),        # 성능이 좋은 모델
 ]
 CALL_INTERVAL_SEC: float = float(os.getenv("LLM_CALL_INTERVAL_SEC", "7"))
 MAX_RETRIES:       int   = int(os.getenv("LLM_MAX_RETRIES", "4"))
 
-_client         = None
-_model_index    = 0
+# --- [수정 시작] ---
+_api_keys = []      # 쪼개진 키들을 담을 리스트
+_key_index = 0      # 현재 사용 중인 키의 번호
+_client = None      # 실제 구동될 클라이언트
+_model_index = 0
 _last_call_time = 0.0
 
-
 def get_client() -> genai.Client:
-    global _client
+    global _client, _api_keys, _key_index
+    
     if _client is None:
-        key = os.getenv("GEMINI_API_KEY")
-        if not key:
-            raise EnvironmentError("GEMINI_API_KEY 미설정")
-        _client = genai.Client(api_key=key)
+        load_dotenv()
+        # 1. .env에서 'S'가 붙은 전체 키 뭉치를 가져옵니다.
+        raw_keys = os.getenv("GEMINI_API_KEYS")
+        
+        if not raw_keys:
+            # 혹시 모르니 단수형도 한번 더 체크합니다.
+            raw_keys = os.getenv("GEMINI_API_KEY")
+            
+        if not raw_keys:
+            raise EnvironmentError("GEMINI_API_KEYS가 .env에 설정되지 않았습니다.")
+            
+        # 2. 쉼표(,)나 공백으로 구분된 키들을 리스트로 쪼개고 공백을 제거합니다.
+        _api_keys = [k.strip() for k in raw_keys.replace(',', ' ').split() if k.strip()]
+        
+        if not _api_keys:
+            raise ValueError("사용 가능한 Gemini API 키가 리스트에 없습니다.")
+            
+        # 3. 첫 번째 키로 클라이언트를 만듭니다.
+        _client = genai.Client(api_key=_api_keys[_key_index])
+        print(f"  [LLM] 키 로드 완료: 총 {len(_api_keys)}개의 키를 찾았습니다.")
+        
     return _client
+
+# 추가: 키가 한도 초과(429)일 때 다음 키로 바꿔주는 함수
+def rotate_key():
+    global _client, _key_index
+    if len(_api_keys) > 1:
+        _key_index = (_key_index + 1) % len(_api_keys)
+        _client = genai.Client(api_key=_api_keys[_key_index])
+        print(f"  [LLM] 🔑 다음 API 키로 전환: {_key_index + 1}번 키 사용")
+        return True
+    return False
+# --- [수정 끝] ---
 
 
 def current_model() -> str:

@@ -11,19 +11,7 @@ __pycache__/
 
 # VS Code 설정 폴더
 .vscode/
-<<<<<<< HEAD
 # ------------------------
-
-
-# --- frontend Settings ---
-# 중간에 작성하면 됨
-# ------------------------
-
-
-# --- AI Settings ---
-# 중간에 작성하면 됨
-# ------------------------
-=======
 
 # --- AI Settings ---
 file/
@@ -60,4 +48,3 @@ timeline/experiments/artifacts/
 # Labeling output (large, runtime-generated)
 label_results/
 주간학습보고서/
->>>>>>> origin/ai_ver1

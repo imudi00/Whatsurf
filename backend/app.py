@@ -1,17 +1,31 @@
 import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 1. 현재 파일(app.py)의 위치를 기준으로 한 칸 위(프로젝트 루트) 경로 계산
+root_path = Path(__file__).resolve().parents[1]
+
+# 2. 그 경로가 파이썬이 파일을 찾는 명단(sys.path)에 없으면 추가
+if str(root_path) not in sys.path:
+    sys.path.insert(0, str(root_path))
+    
+#ai 파이프라인 갖고오기
+from AI.pipeline.run_pipeline import run_pipeline
+
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-from dotenv import load_dotenv
 from supabase import create_client, Client
 import math
+import asyncio
 
 #crawler.py에서 main_crawler 함수를 가져옵니다.
 from crawler import main_crawler
-
-load_dotenv()
 
 app = FastAPI(title="Whatsurf API Server")
 
@@ -29,8 +43,8 @@ app.add_middleware(
 )
 
 # Supabase 설정
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL_backend")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY_backend")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Request Models ---
@@ -38,6 +52,32 @@ class QueryRequest(BaseModel):
     query_text: str
 
 # --- API Endpoints ---
+
+# 1. 수집과 분석을 순차적으로 실행하는 통합 비동기 함수
+async def run_full_process(query_text: str, query_id: int):
+    try:
+        # Step A: 크롤러 실행 (비동기 함수이므로 await 필수)
+        print(f"--- [Step 1] Crawler 시작: {query_text} (ID: {query_id}) ---")
+        await main_crawler(query_text, query_id) 
+        
+        # Step B: AI 파이프라인 시작 
+        # run_pipeline이 일반 함수(sync)라면 그대로 호출, 
+        # 만약 내부에서 대기 시간이 길다면 별도 스레드에서 돌리는 방법도 있지만 
+        # 우선은 직관적으로 호출합니다.
+        print(f"--- [Step 2] AI Pipeline 시작 (ID: {query_id}) ---")
+        
+        # 동기 함수를 비동기 루프에서 안전하게 실행 (권장)
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, lambda: run_pipeline(
+            query_id=query_id, 
+            steps=["clustering", "feature_map", "timeline"]
+        ))
+        
+        print(f"--- [Success] 모든 공정 완료 (ID: {query_id}) ---")
+        
+    except Exception as e:
+        print(f"--- [Error] 작업 중 오류 발생 (ID: {query_id}): {e} ---")
+
 
 # 1. 검색어 입력 및 쿼리 ID 생성 [cite: 3]
 @app.post("/api/queries")
@@ -54,9 +94,8 @@ async def create_query(request: QueryRequest, background_tasks: BackgroundTasks)
         query_id = query_data.data[0]['id']
         query_text = query_data.data[0]['query_text']
 
-        # 2. [크롤러 호출] 발급받은 query_id를 크롤러에게 넘겨줍니다.
-        # 이제 crawler.py의 main_crawler는 이 ID를 사용해 기사를 저장합니다.
-        background_tasks.add_task(main_crawler, query_text, query_id)
+        # 통합 프로세스 등록
+        background_tasks.add_task(run_full_process, query_text, query_id)
         
         # 3. [응답] 사용자에게는 바로 ID를 돌려줍니다. (수집은 백그라운드에서 진행)
         return {

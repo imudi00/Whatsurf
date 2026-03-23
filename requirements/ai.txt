@@ -29,3 +29,9 @@ tqdm
 
 # 6. db
 supabase
+
+#++ ......
+umap-learn
+groq
+scikit-learn
+JPype1

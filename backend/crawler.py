@@ -19,8 +19,8 @@ load_dotenv()
 #경로 설정... log 저장용. 
 SAVE_FOLDER = r"C:\Users\Administrator\Desktop\2026-1\2026-1_CreativeProject\data_log"
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL_backend")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY_backend")
 CLIENT_ID = os.getenv("client_id")
 CLIENT_SECRET = os.getenv("client_secret")
 
@@ -144,7 +144,7 @@ async def main_crawler(query_text, query_id):
 
     # 2. 네이버 뉴스 검색 API 호출
     headers = {"X-Naver-Client-Id": CLIENT_ID, "X-Naver-Client-Secret": CLIENT_SECRET}
-    api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query_text)}&display=100&sort=sim"
+    api_url = f"https://openapi.naver.com/v1/search/news.json?query={urllib.parse.quote(query_text)}&display=50&sort=sim"
     
     try:
         res = requests.get(api_url, headers=headers)
