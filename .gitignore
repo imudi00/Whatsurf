@@ -11,6 +11,7 @@ __pycache__/
 
 # VS Code 설정 폴더
 .vscode/
+# ------------------------
 
 # --- AI Settings ---
 file/
