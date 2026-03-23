@@ -4,6 +4,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+# Windows cp949 콘솔에서 한글/특수문자 UnicodeEncodeError 방지
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+import os
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", "4")  # wmic WinError 억제
+
 
 import time
 import csv
