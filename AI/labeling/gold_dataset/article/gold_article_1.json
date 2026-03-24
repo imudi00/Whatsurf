@@ -1,31 +1,14 @@
 {
   "article_id": "1",
   "title": "삼성전자 이번이 마지막 기회?… 15개월만 ‘최고 금리’에도 ‘마통’...",
-  "gold_article": {
-    "frame": "경제적가치",
-    "logic": "사실/정보 전달",
-    "stance_score": 0.0,
-    "stance_label": "중립",
-
-    "bias_x": 0.2,
-    "bias_y": 0.1,
-
-    "art_words": [
-      "최고",
-      "마지막 기회"
-    ],
-
-    "body_depth": 0.95,
-    "body_depth_label": "high",
-
-    "omission_risk": 0.6,
-
-    "reason": {
-      "frame": "금리 상승, 대출 증가, 투자 수요 등 경제적 영향 중심",
-      "logic": "통계와 수치 기반 설명 위주",
-      "stance": "투자 권유/비판 없이 현상 설명 중심",
-      "bias": "제목에서 '마지막 기회' 표현으로 투자 유도 뉘앙스 존재",
-      "omission": "투자 위험성(손실 사례, 리스크 설명)이 충분히 강조되지 않음"
-    }
-  }
+  "stance_score": 0.0,
+  "stance_label": "중립",
+  "body_depth": 0.9,
+  "body_depth_label": "high",
+  "art_words": [
+    "최고",
+    "마지막 기회"
+  ],
+  "loaded_word_density": 0.0,
+  "is_biased": true
 }
