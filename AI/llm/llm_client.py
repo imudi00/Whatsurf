@@ -131,7 +131,20 @@ def call_llm(prompt: str) -> str:
         _wait_rpm()
         try:
             _last_call_time = time.time()
-            return client.models.generate_content(model=current_model(), contents=prompt).text.strip()
+            resp = client.models.generate_content(model=current_model(), contents=prompt)
+            text = resp.text  # safety filter / quota 시 None 가능
+            if not text:
+                # finish_reason 정보 출력 후 재시도
+                try:
+                    reason = resp.candidates[0].finish_reason if resp.candidates else "UNKNOWN"
+                except Exception:
+                    reason = "UNKNOWN"
+                print(f"  [LLM] ⚠️  빈 응답 (finish_reason={reason}) — 재시도 {attempt}/{MAX_RETRIES}")
+                if attempt < MAX_RETRIES:
+                    time.sleep(5)
+                    continue
+                raise RuntimeError(f"Gemini 빈 응답 {MAX_RETRIES}회 반복 (finish_reason={reason})")
+            return text.strip()
 
         except genai_errors.ClientError as e:
             msg = str(e)
