@@ -5,6 +5,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ── Windows: HuggingFace / PyTorch 캐시 경로 고정 ──────────
+# 서버가 Administrator 계정으로 실행될 때 Path.home()이
+# C:\Users\Administrator 를 반환하면 접근 권한 오류 발생.
+# 모든 AI 라이브러리 임포트 전에 캐시 디렉토리를 프로젝트 루트로 고정.
+_AI_CACHE = str(Path(__file__).resolve().parents[1] / ".hf_cache")
+os.environ.setdefault("HF_HOME",                    _AI_CACHE)
+os.environ.setdefault("TRANSFORMERS_CACHE",         _AI_CACHE)
+os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", _AI_CACHE)
+os.environ.setdefault("TORCH_HOME",                 _AI_CACHE)
+os.environ.setdefault("XDG_CACHE_HOME",             _AI_CACHE)
+
 # 1. 현재 파일(app.py)의 위치를 기준으로 한 칸 위(프로젝트 루트) 경로 계산
 root_path = Path(__file__).resolve().parents[1]
 
