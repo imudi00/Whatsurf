@@ -48,3 +48,6 @@ timeline/experiments/artifacts/
 # Labeling output (large, runtime-generated)
 label_results/
 주간학습보고서/
+
+# HuggingFace model cache
+.hf_cache/

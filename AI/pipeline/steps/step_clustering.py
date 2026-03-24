@@ -29,6 +29,13 @@ if str(_CLUSTERING_SRC) not in sys.path:
 # joblib wmic WinError 방지 (Windows)
 os.environ.setdefault("LOKY_MAX_CPU_COUNT", "4")
 
+# HuggingFace 캐시를 프로젝트 루트로 고정
+# (서버가 Administrator 등 다른 계정으로 실행될 때 Path.home() 접근 권한 오류 방지)
+_HF_CACHE = str(Path(__file__).resolve().parents[3] / ".hf_cache")
+os.environ.setdefault("HF_HOME", _HF_CACHE)
+os.environ.setdefault("TRANSFORMERS_CACHE", _HF_CACHE)
+os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", _HF_CACHE)
+
 from clustering.embedding import sbert_embedding          # type: ignore
 from clustering.reducer import reduce_dimension           # type: ignore
 from clustering.clustering import density_cluster         # type: ignore
