@@ -113,7 +113,7 @@ def run_pipeline(
     limit: int = 0,
     resume: bool = True,
     skip_comments: bool = False,
-    out_dir: str = "./label_results",
+    out_dir: str | None = None,
     upload: bool = True,
 ) -> dict:
     """
@@ -131,6 +131,11 @@ def run_pipeline(
     Returns:
         각 스텝 결과 요약 dict
     """
+    # out_dir: None이면 프로젝트 루트 기준 절대경로로 자동 설정
+    # (app.py 실행 위치와 무관하게 항상 동일한 경로 사용)
+    if out_dir is None:
+        out_dir = str(_PROJECT_ROOT / "label_results")
+
     started_at = datetime.now(timezone.utc)
     results: dict = {}
 

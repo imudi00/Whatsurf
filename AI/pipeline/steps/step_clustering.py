@@ -142,8 +142,11 @@ def run_clustering_step(
             result = call_llm_json(_cluster_summary_prompt(cluster_texts, query_text))
             cluster_title   = str(result.get("title",   f"클러스터 {cl}"))[:100]
             cluster_summary = str(result.get("summary", ""))
+            print(f"  [Clustering] LLM 요약 완료: {cluster_title}")
         except Exception as e:
-            print(f"  [Clustering] ⚠️  LLM 오류 (cluster {cl}): {e}")
+            import traceback
+            print(f"  [Clustering] ⚠️  LLM 오류 (cluster {cl}): {type(e).__name__}: {e}")
+            traceback.print_exc()
             cluster_title   = f"클러스터 {cl}"
             cluster_summary = ""
 
