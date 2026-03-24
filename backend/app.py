@@ -189,26 +189,33 @@ async def match_article_by_vector(query_id: int, x: float, y: float):
         min_distance = float('inf')
 
         for item in res.data:
-            # article_features의 bias_x, bias_y 사용
-            article_x = item.get("bias_x", 0)
-            article_y = item.get("bias_y", 0)
+            # 1. 먼저 articles 데이터를 가져옵니다.
+            article_info = item.get("articles")
             
-            # 입력값(x, y)와의 거리 계산
-            distance = math.sqrt((x - article_x)**2 + (y - article_y)**2)
+            # [수정 핵심] article_info가 None이 아닐 때만 계산을 진행합니다.
+            if article_info:
+                # article_features의 bias_x, bias_y 사용
+                article_x = item.get("bias_x", 0)
+                article_y = item.get("bias_y", 0)
+                
+                # 입력값(x, y)와의 거리 계산
+                distance = math.sqrt((x - article_x)**2 + (y - article_y)**2)
+                
+                if distance < min_distance:
+                    min_distance = distance
+                    # matched_article 구성을 if문 안으로 넣어서 안전하게 처리합니다.
+                    matched_article = {
+                        "id": article_info.get("id"),
+                        "title": article_info.get("title"),
+                        "url": article_info.get("url"),
+                        "bias_vector1": article_x,
+                        "bias_vector2": article_y,
+                        "distance": round(distance, 4)
+                    }
+            else:
+                # 기사 정보가 없는 데이터는 무시하고 다음으로 넘어갑니다.
+                continue
             
-            if distance < min_distance:
-                min_distance = distance
-                # 명세서 응답 형식에 맞게 데이터 재구성 
-                article_info = item.get("articles", {})
-                matched_article = {
-                    "id": article_info.get("id"),
-                    "title": article_info.get("title"),
-                    "url": article_info.get("url"),
-                    "bias_vector1": article_x,
-                    "bias_vector2": article_y,
-                    "distance": round(distance, 4)
-                }
-
         return {
             "status": "success", 
             "data": {
