@@ -43,7 +43,7 @@ if not found_env:
 MODEL_FALLBACK_LIST: list = [
     os.getenv("LLM_MODEL_1", "gemini-2.5-flash-lite"),
     os.getenv("LLM_MODEL_2", "gemini-2.0-flash-lite"),
-    os.getenv("LLM_MODEL_3", "gemini-1.5-flash-8b"),
+    os.getenv("LLM_MODEL_3", "gemini-1.5-flash"),      # gemini-1.5-flash-8b deprecated → gemini-1.5-flash
 ]
 CALL_INTERVAL_SEC: float = float(os.getenv("LLM_CALL_INTERVAL_SEC", "7"))
 MAX_RETRIES:       int   = int(os.getenv("LLM_MAX_RETRIES", "4"))
@@ -131,7 +131,20 @@ def call_llm(prompt: str) -> str:
         _wait_rpm()
         try:
             _last_call_time = time.time()
-            return client.models.generate_content(model=current_model(), contents=prompt).text.strip()
+            resp = client.models.generate_content(model=current_model(), contents=prompt)
+            text = resp.text  # safety filter / quota 시 None 가능
+            if not text:
+                # finish_reason 정보 출력 후 재시도
+                try:
+                    reason = resp.candidates[0].finish_reason if resp.candidates else "UNKNOWN"
+                except Exception:
+                    reason = "UNKNOWN"
+                print(f"  [LLM] ⚠️  빈 응답 (finish_reason={reason}) — 재시도 {attempt}/{MAX_RETRIES}")
+                if attempt < MAX_RETRIES:
+                    time.sleep(5)
+                    continue
+                raise RuntimeError(f"Gemini 빈 응답 {MAX_RETRIES}회 반복 (finish_reason={reason})")
+            return text.strip()
 
         except genai_errors.ClientError as e:
             msg = str(e)
@@ -142,11 +155,21 @@ def call_llm(prompt: str) -> str:
                 if not _next_model(): raise RuntimeError("모든 Gemini 모델 RPD 소진") from e
                 attempt = 0; continue
 
-            # RPM 초과 → retryDelay 대기
+            # 404 모델 없음 → 즉시 다음 모델로 전환
+            if "404" in msg or "NOT_FOUND" in msg:
+                print(f"  [LLM] ✕ 모델 없음/지원 중단 ({current_model()}) → 다음 모델로 전환")
+                if not _next_model(): raise RuntimeError("모든 Gemini 모델이 지원되지 않음") from e
+                attempt = 0; continue
+
+            # RPM 초과 → 키 로테이션 후 대기
             if "RESOURCE_EXHAUSTED" in msg and attempt < MAX_RETRIES:
-                delay = _parse_retry_delay(msg)
-                print(f"  [LLM] ✕ RPM 초과 — {delay:.0f}s 대기 ({attempt}/{MAX_RETRIES})")
-                time.sleep(delay); continue
+                rotated = rotate_key()  # 다음 키로 전환 (여러 키가 있을 때)
+                client = get_client()   # 새 클라이언트 반영
+                delay = _parse_retry_delay(msg) if not rotated else 2
+                print(f"  [LLM] ✕ RPM 초과 — {'키 전환' if rotated else f'{delay:.0f}s 대기'} ({attempt}/{MAX_RETRIES})")
+                if not rotated:
+                    time.sleep(delay)
+                continue
 
             # TPM 초과 → 지수 백오프
             if ("429" in msg or "token" in msg.lower()) and attempt < MAX_RETRIES:

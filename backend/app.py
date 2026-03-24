@@ -76,7 +76,9 @@ async def run_full_process(query_text: str, query_id: int):
         print(f"--- [Success] 모든 공정 완료 (ID: {query_id}) ---")
         
     except Exception as e:
+        import traceback
         print(f"--- [Error] 작업 중 오류 발생 (ID: {query_id}): {e} ---")
+        traceback.print_exc()
 
 
 # 1. 검색어 입력 및 쿼리 ID 생성 [cite: 3]

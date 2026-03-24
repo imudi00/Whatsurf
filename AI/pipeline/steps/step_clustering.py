@@ -105,6 +105,9 @@ def run_clustering_step(
         # LLM 요약
         try:
             result = call_llm_json(_cluster_summary_prompt(cluster_texts, query_text))
+            # call_llm_json이 list를 반환하는 경우 대비
+            if isinstance(result, list):
+                result = result[0] if result else {}
             cluster_title   = str(result.get("title",   f"클러스터 {cl}"))[:100]
             cluster_summary = str(result.get("summary", ""))
         except Exception as e:
