@@ -17,7 +17,7 @@ from supabase import create_client, Client
 load_dotenv()
 
 #경로 설정... log 저장용. 
-SAVE_FOLDER = r"C:\Users\Administrator\Desktop\2026-1\2026-1_CreativeProject\data_log"
+SAVE_FOLDER = os.path.join(os.path.dirname(__file__), "data_log")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL_backend")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY_backend")
