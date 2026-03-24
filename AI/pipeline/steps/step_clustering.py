@@ -36,9 +36,31 @@ os.environ.setdefault("HF_HOME", _HF_CACHE)
 os.environ.setdefault("TRANSFORMERS_CACHE", _HF_CACHE)
 os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", _HF_CACHE)
 
+import hdbscan as _hdbscan
+
 from clustering.embedding import sbert_embedding          # type: ignore
 from clustering.reducer import reduce_dimension           # type: ignore
 from clustering.clustering import density_cluster         # type: ignore
+
+
+def _density_cluster_safe(reduced, n_articles: int):
+    """
+    기사 수에 따라 min_cluster_size를 동적 조정.
+    HDBSCAN 최소 요구: n_samples >= min_samples + 1 (기본 min_samples = min_cluster_size).
+    """
+    # 기사 수 기반 동적 파라미터
+    min_cs = max(3, min(10, n_articles // 5))   # 3 ~ 10
+    min_ms = max(2, min_cs - 1)                 # min_samples = min_cluster_size - 1
+
+    print(f"  [Clustering] HDBSCAN 파라미터: min_cluster_size={min_cs}, min_samples={min_ms}")
+
+    clusterer = _hdbscan.HDBSCAN(
+        min_cluster_size=min_cs,
+        min_samples=min_ms,
+        metric="euclidean",
+        cluster_selection_method="eom",
+    )
+    return clusterer.fit_predict(reduced)
 
 from AI.llm.llm_client import call_llm_json
 from AI.pipeline.db.save_clusters import save_cluster, update_article_cluster_label
@@ -78,6 +100,12 @@ def run_clustering_step(
         print("  [Clustering] ⚠️  기사 없음 — 스킵")
         return {"cluster_count": 0, "noise_count": 0, "cluster_map": {}, "labels": []}
 
+    # 최소 기사 수 체크 (HDBSCAN은 최소 5건 필요)
+    MIN_ARTICLES = 5
+    if len(articles) < MIN_ARTICLES:
+        print(f"  [Clustering] ⚠️  기사 수({len(articles)})가 너무 적음 (최소 {MIN_ARTICLES}건) — 스킵")
+        return {"cluster_count": 0, "noise_count": len(articles), "cluster_map": {}, "labels": [-1] * len(articles)}
+
     texts = [f"{a.get('title', '')} {a.get('body', '')}" for a in articles]
 
     # ── Step 1: 임베딩 ─────────────────────────────────────
@@ -90,7 +118,7 @@ def run_clustering_step(
 
     # ── Step 3: 클러스터링 ─────────────────────────────────
     print("  [Clustering] HDBSCAN 클러스터링...")
-    raw_labels = density_cluster(reduced)          # numpy array
+    raw_labels = _density_cluster_safe(reduced, len(articles))  # 기사 수 기반 동적 파라미터
 
     labels_list: list[int] = [int(l) for l in raw_labels]
     unique_clusters = sorted({l for l in labels_list if l != -1})
