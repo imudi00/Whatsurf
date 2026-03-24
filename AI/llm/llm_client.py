@@ -162,7 +162,71 @@ def call_llm(prompt: str) -> str:
             raise
 
 
-def call_llm_json(prompt: str):
-    """call_llm 후 JSON 파싱"""
-    raw = call_llm(prompt)
-    return json.loads(raw.replace("```json", "").replace("```", "").strip())
+def _robust_json_parse(raw: str):
+    """
+    LLM 출력에서 JSON 객체/배열을 강건하게 파싱.
+    모델이 backtick, 설명글, trailing comma 등을 붙여도 처리.
+    """
+    import re as _re
+
+    def _clean(text: str) -> str:
+        # 마크다운 코드블록 제거
+        text = _re.sub(r"```(?:json)?\s*", "", text, flags=_re.IGNORECASE)
+        text = _re.sub(r"```", "", text).strip()
+        # trailing comma 제거: ,} 또는 ,]
+        text = _re.sub(r",\s*([\]\}])", r"\1", text)
+        return text
+
+    text = _clean(raw)
+
+    # 전략 1: 전체 텍스트 직접 파싱
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # 전략 2: JSON 객체 { ... } 추출
+    m = _re.search(r"\{[\s\S]*\}", text)
+    if m:
+        try:
+            return json.loads(_clean(m.group(0)))
+        except json.JSONDecodeError:
+            pass
+
+    # 전략 3: JSON 배열 [ ... ] 추출
+    m = _re.search(r"\[[\s\S]*\]", text)
+    if m:
+        try:
+            return json.loads(_clean(m.group(0)))
+        except json.JSONDecodeError:
+            pass
+
+    raise json.JSONDecodeError(
+        f"JSON 파싱 실패. 원본 앞 200자: {raw[:200]}", raw, 0
+    )
+
+
+def call_llm_json(prompt: str, _retry: int = 2):
+    """call_llm 후 JSON 파싱 (강건한 파서 사용, 실패 시 재시도)."""
+    last_raw = ""
+    for attempt in range(1, _retry + 2):
+        if attempt == 1:
+            raw = call_llm(prompt)
+        else:
+            retry_prompt = (
+                prompt
+                + "\n\n⚠ 이전 응답이 유효한 JSON이 아니었습니다. "
+                "반드시 유효한 JSON만 출력하세요. 설명이나 마크다운 없이."
+            )
+            print(f"  [LLM JSON] 파싱 실패 → 재시도 ({attempt - 1}/{_retry})")
+            raw = call_llm(retry_prompt)
+        last_raw = raw
+        try:
+            return _robust_json_parse(raw)
+        except (json.JSONDecodeError, ValueError):
+            if attempt <= _retry:
+                continue
+            break
+    raise json.JSONDecodeError(
+        f"JSON 파싱 {_retry + 1}회 모두 실패. 원본: {last_raw[:300]}", last_raw, 0
+    )
