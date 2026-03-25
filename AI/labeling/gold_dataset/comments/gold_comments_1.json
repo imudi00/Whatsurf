@@ -1,18 +1,13 @@
 {
+  "id": "1",
   "article_id": "1",
   "comments": [
     {
-      "comment_id": 1,
       "cmt_comment": "빚내서 주식투자하는건 괜찮아? 문제없어? 주식투자는 건전한 투자로만 보는거 맞지?  빚내서 주식하다 다 날려버리면 나라에서 구해주는거지??",
+      "cmt_rank": 1,
       "cmt_emotion": {
-        "label": "fear",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 1.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "fear": 1.0
         }
       },
       "cmt_words": [
@@ -21,17 +16,11 @@
       ]
     },
     {
-      "comment_id": 2,
       "cmt_comment": "정부에서 코스피 7000, 코스닥 3000간다고 집팔아서 주식하라고 부추긴 넘들 제정신들인가",
+      "cmt_rank": 2,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -40,17 +29,11 @@
       ]
     },
     {
-      "comment_id": 3,
       "cmt_comment": "김대중때 카드무분별 발급해 카드대란사태 생각난다",
+      "cmt_rank": 3,
       "cmt_emotion": {
-        "label": "sadness",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 1.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "sadness": 1.0
         }
       },
       "cmt_words": [
@@ -59,16 +42,10 @@
       ]
     },
     {
-      "comment_id": 4,
       "cmt_comment": "삼전주식이 한정판이냐??뭘 마지막기회야 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
+      "cmt_rank": 4,
       "cmt_emotion": {
-        "label": "joy",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
+        "emotions": {
           "joy": 1.0
         }
       },
@@ -79,17 +56,11 @@
       ]
     },
     {
-      "comment_id": 5,
       "cmt_comment": "당분간  참아야하느니라",
+      "cmt_rank": 5,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -98,17 +69,11 @@
       ]
     },
     {
-      "comment_id": 6,
       "cmt_comment": "바닥다지기 시기다 어차피 5000포인트는 내줘야 한다 환율과 이런사태등. 겹쳐서 하락압력은 당연하다 삼전이 15만전자되고 하닉이 70십만까지 내려가야 건전한 주식시장이된다",
+      "cmt_rank": 6,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -117,17 +82,11 @@
       ]
     },
     {
-      "comment_id": 7,
       "cmt_comment": "외인들 다빠지고 기관들이  빠져 나올러고 바락하네  못가~",
+      "cmt_rank": 7,
       "cmt_emotion": {
-        "label": "sadness",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 1.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "sadness": 1.0
         }
       },
       "cmt_words": [
@@ -136,17 +95,11 @@
       ]
     },
     {
-      "comment_id": 8,
       "cmt_comment": "결국..개미들만 아작난다...",
+      "cmt_rank": 8,
       "cmt_emotion": {
-        "label": "sadness",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 1.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "sadness": 1.0
         }
       },
       "cmt_words": [
@@ -155,17 +108,11 @@
       ]
     },
     {
-      "comment_id": 9,
       "cmt_comment": "죄명이가 보상해준다 겁먹지말고 질러라",
+      "cmt_rank": 9,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -174,17 +121,11 @@
       ]
     },
     {
-      "comment_id": 10,
       "cmt_comment": "미끄러져내릴일만 남았네..왜 들 호들갑인지..달콤한사탕 하나먹었다고 두번주지는않는다. 잊지말라..3500까지 주르륵..",
+      "cmt_rank": 10,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -193,17 +134,11 @@
       ]
     },
     {
-      "comment_id": 11,
       "cmt_comment": "나라에서 권장하고 정권 바뀌면 법도 바꿔서 피봅니다  산에 태양광 승인해주고 사기로 늦어졌더니 무죄인 정권으로 바뀌며 복구비 내라고 해서 망했습니다",
+      "cmt_rank": 11,
       "cmt_emotion": {
-        "label": "hurt",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 1.0,
-          "joy": 0.0
+        "emotions": {
+          "hurt": 1.0
         }
       },
       "cmt_words": [
@@ -212,16 +147,10 @@
       ]
     },
     {
-      "comment_id": 12,
       "cmt_comment": "삼성전자가 때돈을 버는 이유가 다른건 가격이 정해져 있어 인상하기 힘든데 이건 원가는 같은데 부르는게 값이라 2배개가 될수 있고 10배가 될수 있어 반도체 호황기땐 대박이지 ~~",
+      "cmt_rank": 12,
       "cmt_emotion": {
-        "label": "joy",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
+        "emotions": {
           "joy": 1.0
         }
       },
@@ -231,17 +160,11 @@
       ]
     },
     {
-      "comment_id": 13,
       "cmt_comment": "외인들 매도 를 얼마나 많이 하는지 알고나 하는 말이냐? 개미들 지금 들어가면 죽는다.",
+      "cmt_rank": 13,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -250,17 +173,11 @@
       ]
     },
     {
-      "comment_id": 14,
       "cmt_comment": "언론사들이 부추기네 ㅋㅋ 미친",
+      "cmt_rank": 14,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -269,17 +186,11 @@
       ]
     },
     {
-      "comment_id": 15,
       "cmt_comment": "가치를 보고 중장기로 적금처럼 여윳돈으로 투자할거 아니면 본인이 전문가가 아닌이상 주변 물타서 투기하듯이 하진 말자.. 특히나 최소의 투자인 적금과 예금도 못하는 사람들이라면 난도가 더 높은 주식은 저 먼 얘기로 생각하자 ㅜㅜ",
+      "cmt_rank": 15,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "sadness": 1.0
         }
       },
       "cmt_words": [
@@ -288,17 +199,11 @@
       ]
     },
     {
-      "comment_id": 16,
       "cmt_comment": "선전선동에 주식투기해서는 안된다.선전선동은 공산당수법이다.",
+      "cmt_rank": 16,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -307,17 +212,11 @@
       ]
     },
     {
-      "comment_id": 17,
       "cmt_comment": "동네북이 삼전아냐??",
+      "cmt_rank": 17,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -326,17 +225,11 @@
       ]
     },
     {
-      "comment_id": 18,
       "cmt_comment": "그래 많이 사라 초고수들아",
+      "cmt_rank": 18,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -345,17 +238,11 @@
       ]
     },
     {
-      "comment_id": 19,
       "cmt_comment": "개미는 단기 급등한 주식은 사면 안됨.  더 오를 수도 있지만 떨어지기 시작하면 회복이 쉽지 않음.  내실이 있는 기업중 오르지 않은 종목도 많으니 그중에서 잘 고르고 인내심을 갖고 기다리는 것이 현명",
+      "cmt_rank": 19,
       "cmt_emotion": {
-        "label": "fear",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 1.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "fear": 1.0
         }
       },
       "cmt_words": [
@@ -364,17 +251,11 @@
       ]
     },
     {
-      "comment_id": 20,
       "cmt_comment": "개미만 사고 있는데 돌았나",
+      "cmt_rank": 20,
       "cmt_emotion": {
-        "label": "sadness",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 1.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "sadness": 1.0
         }
       },
       "cmt_words": [
@@ -383,17 +264,11 @@
       ]
     },
     {
-      "comment_id": 21,
       "cmt_comment": "으응 지금 금융위기랑 흡사하다고 해외에서는 계속 경고하고 난리야 많이들 사서 반값할인되는걸 계좌에서 목격할지도...",
+      "cmt_rank": 21,
       "cmt_emotion": {
-        "label": "fear",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 1.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "fear": 1.0
         }
       },
       "cmt_words": [
@@ -402,17 +277,11 @@
       ]
     },
     {
-      "comment_id": 22,
       "cmt_comment": "그렇게 당해놓고 또 지랄들이니?? 마이너스13까지 내려간다. 기다려라 쪼다들아",
+      "cmt_rank": 22,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -421,17 +290,11 @@
       ]
     },
     {
-      "comment_id": 23,
       "cmt_comment": "하이리스크 하이리턴 아니겟노?",
+      "cmt_rank": 23,
       "cmt_emotion": {
-        "label": "fear",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 1.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "fear": 1.0
         }
       },
       "cmt_words": [
@@ -440,16 +303,10 @@
       ]
     },
     {
-      "comment_id": 24,
       "cmt_comment": "이정도면 주울때",
+      "cmt_rank": 24,
       "cmt_emotion": {
-        "label": "joy",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
+        "emotions": {
           "joy": 1.0
         }
       },
@@ -459,17 +316,11 @@
       ]
     },
     {
-      "comment_id": 25,
       "cmt_comment": "주식리딩방하는 찢에게 물어봐",
+      "cmt_rank": 25,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [
@@ -478,17 +329,11 @@
       ]
     },
     {
-      "comment_id": 26,
       "cmt_comment": "죄명이 은행대출이자 한계선은 없나.",
+      "cmt_rank": 26,
       "cmt_emotion": {
-        "label": "hurt",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 0.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 1.0,
-          "joy": 0.0
+        "emotions": {
+          "hurt": 1.0
         }
       },
       "cmt_words": [
@@ -497,17 +342,11 @@
       ]
     },
     {
-      "comment_id": 27,
       "cmt_comment": "국힘당은 천하태평이다.내란일으키고 절윤도 못하더만 중동사태로 나라 경제가 불안해 지는데 자기들끼리 싸움만~ 세금만 축내는 국힘당은 없애버려야 한다",
+      "cmt_rank": 27,
       "cmt_emotion": {
-        "label": "anger",
-        "intensity": 1.0,
-        "probs": {
-          "anger": 1.0,
-          "sadness": 0.0,
-          "fear": 0.0,
-          "hurt": 0.0,
-          "joy": 0.0
+        "emotions": {
+          "anger": 1.0
         }
       },
       "cmt_words": [

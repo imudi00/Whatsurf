@@ -1,14 +1,14 @@
 {
-  "article_id": "1",
-  "title": "삼성전자 이번이 마지막 기회?… 15개월만 ‘최고 금리’에도 ‘마통’...",
-  "stance_score": 0.0,
-  "stance_label": "중립",
-  "body_depth": 0.9,
-  "body_depth_label": "high",
-  "art_words": [
-    "최고",
-    "마지막 기회"
-  ],
-  "loaded_word_density": 0.0,
-  "is_biased": true
+  "id": 1,
+  "article_id": 1,
+  "model_version": "gold_v1",
+  "frame_id": 4,
+  "logic_id": 6,
+  "stance_score": -0.1,
+  "bias_x": 0.2,
+  "bias_y": 0.1,
+  "art_words": ["최고", "마지막 기회"],
+  "body_depth": 0.99,
+  "omission_risk": 1,
+  "created_at": "2026-03-25 12:05:00"
 }
