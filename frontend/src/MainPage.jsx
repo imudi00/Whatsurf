@@ -38,14 +38,14 @@ export default function MainPage() {
     if (trimmedKeyword.length < 2) { alert('ERROR!\n정확한 검색어(2자 이상)를 입력해주세요!'); return; }
     
     setIsLoading(true);
-    setTimeout(() => { navigate('/result'); }, 1500);
+    setTimeout(() => { navigate('/result', { state: { searchTerm: trimmedKeyword } }); }, 1500);
   };
 
   // ✅ 2. 실시간 트렌드 클릭 시 검색 실행
   const handleTrendClick = (trendKeyword) => {
     setKeyword(trendKeyword);
     setIsLoading(true);
-    setTimeout(() => { navigate('/result'); }, 1500);
+    setTimeout(() => { navigate('/result', { state: { searchTerm: trendKeyword } }); }, 1500);
   };
 
   const chooseHigher = () => { rightItem.volume >= leftItem.volume ? handleCorrect() : handleWrong(); };
