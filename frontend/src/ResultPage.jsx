@@ -92,7 +92,7 @@ export default function ResultPage() {
         if (isMounted) setQueryId(currentQueryId);
 
         let clusters = [];
-        const maxTries = 360;
+        const maxTries = 36000;
         const intervalMs = 10000;
 
         for (let i = 1; i <= maxTries; i++) {
@@ -102,10 +102,16 @@ export default function ResultPage() {
           const clusterData = await fetchAPI(`/api/queries/${currentQueryId}/clusters`);
           clusters = clusterData?.data?.clusters || clusterData?.clusters || [];
 
-          if (clusters.length > 0) {
-            console.log("✅ 데이터 수신 완료!");
+          // clusters 배열이 있고, 모든 군집에 요약문(cluster_summary)이 채워졌는지 확인
+          const isAnalysisComplete = clusters.length > 0 && clusters.every(c => c.cluster_summary && c.cluster_summary.length > 0);
+
+          if (isAnalysisComplete) {
+            console.log("✅ 상세 분석(라벨링)까지 모두 완료되었습니다!");
             break;
           }
+
+          // 아직 요약문이 없다면 루프를 돌며 10초 더 기다림
+          console.log(`⏳ 군집은 생성되었으나 상세 분석 대기 중... (시도: ${i}/${maxTries})`);
           if (i < maxTries) await new Promise(r => setTimeout(r, intervalMs));
         }
 
