@@ -20,15 +20,12 @@ def _split_env(val: str) -> list[str]:
     return [s.strip().strip("'\"") for s in val.split(",") if s.strip().strip("'\"")]
 
 
-def load_api_keys(env_multi: str, env_single: str) -> list[str]:
+def load_api_keys(env_multi: str) -> list[str]:
     """콤마 구분 다중 키 또는 단일 키 로드. 따옴표 자동 제거."""
     if keys := _split_env(os.getenv(env_multi, "")):
         return keys
-    if single := os.getenv(env_single, "").strip().strip("'\""):
-        return [single]
     raise EnvironmentError(
         f"API 키 미설정. .env에 {env_multi}=key1,key2 (따옴표 없이) "
-        f"또는 {env_single}=key 를 추가하세요."
     )
 
 

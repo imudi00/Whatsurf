@@ -102,24 +102,12 @@ export default function ResultPage() {
           const clusterData = await fetchAPI(`/api/queries/${currentQueryId}/clusters`);
           clusters = clusterData?.data?.clusters || clusterData?.clusters || [];
 
-          // clusters 배열이 있고, 모든 군집에 요약문(cluster_summary)이 채워졌는지 확인
-          const isAnalysisComplete = clusters.length > 0 && clusters.some(c => c.cluster_summary && c.cluster_summary.length > 0);
-
-          if (isAnalysisComplete) {
-            console.log("✅ 일부 또는 전체 분석 완료! 데이터를 화면에 표시합니다.");
-            
-            // 🚨 중요: 여기서 상태를 확실히 업데이트하고 로딩을 꺼야 합니다.
-            setClusterDetails(clusters); 
-            const total = clusters.reduce((sum, c) => sum + (Number(c.cluster_count) || 0), 0);
-            setTotalArticles(total);
-            setIsLoading(false); // 👈 로딩 스피너 제거
-            break; 
+          if (clusters.length > 0) {
+            console.log("✅ 군집 생성 완료!");
+            break;
           }
 
-          console.log(`⏳ 서버에서 요약문이 생성되기를 기다리는 중... (시도: ${i})`);
-
-          // 아직 요약문이 없다면 루프를 돌며 10초 더 기다림
-          console.log(`⏳ 군집은 생성되었으나 상세 분석 대기 중... (시도: ${i}/${maxTries})`);
+          console.log(`⏳ 군집 생성 대기 중... (시도: ${i}/${maxTries})`);
           if (i < maxTries) await new Promise(r => setTimeout(r, intervalMs));
         }
 
@@ -145,6 +133,16 @@ export default function ResultPage() {
           })));
           return; 
         }
+
+        // 각 클러스터 detail 조회 → cluster_summary, cluster_title 등 채우기
+        const enriched = await Promise.all(
+          clusters.map(async c => {
+            const res = await fetchAPI(`/api/queries/${currentQueryId}/clusters/${c.cluster_label}`);
+            const detail = res?.data?.cluster || res?.cluster || {};
+            return { ...c, ...detail };
+          })
+        );
+        clusters = enriched;
 
         const total = clusters.reduce((sum, c) => sum + (Number(c.cluster_count) || 0), 0);
         setTotalArticles(total);

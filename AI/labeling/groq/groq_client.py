@@ -50,7 +50,7 @@ MAX_RETRIES       = int(os.getenv("GROQ_MAX_RETRIES", "4"))
 RPD_LIMIT         = int(os.getenv("GROQ_RPD_LIMIT", "14400"))
 
 _counter  = RpdCounter(Path(os.getenv("GROQ_COUNTER_FILE", ".groq_usage.json")), RPD_LIMIT)
-_API_KEYS = load_api_keys("GROQ_API_KEYS", "GROQ_API_KEY")
+_API_KEYS = load_api_keys("GROQ_API_KEYS")
 _MODELS   = load_models("GROQ_MODELS", "GROQ_MODEL", "llama-3.3-70b-versatile")
 
 

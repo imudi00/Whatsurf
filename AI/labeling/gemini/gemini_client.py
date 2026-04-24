@@ -1,18 +1,19 @@
 # labeling/gemini/gemini_client.py
 """
 Gemini Pro 클라이언트 — omission_risk 전용
-키 + 모델 로테이션으로 RPD/RPM 한도 초과 시 자동 전환
+키 로테이션으로 RPD/RPM 한도 초과 시 자동 전환 (모델 고정)
 
 .env 설정:
     GEMINI_API_KEYS=key1,key2,key3
-    GEMINI_PRO_MODELS=gemini-2.5-pro,gemini-2.0-flash
+    GEMINI_PRO_MODELS=gemini-2.5-pro   (첫 번째 항목만 사용)
     GEMINI_PRO_RPD_LIMIT=100   GEMINI_PRO_CALL_INTERVAL_SEC=13
 
 로테이션 규칙:
-    키 소진(RPD/RPM) → 다음 키 (같은 모델)
-    모든 키 소진     → 다음 모델, 키 인덱스 초기화
-    모든 조합 소진   → RuntimeError
-    세션 내에서 이전 키/모델로 절대 돌아가지 않음
+    RPM/한도 초과 → MAX_RETRIES 재시도 후 다음 키
+    RPD 소진      → 즉시 다음 키
+    기타 에러     → 다음 키
+    모든 키 소진  → RuntimeError
+    세션 내에서 이전 키로 절대 돌아가지 않음
 """
 import os
 import time
@@ -40,22 +41,7 @@ MAX_RETRIES       = 3
 
 _counter  = RpdCounter(Path(os.getenv("GEMINI_PRO_COUNTER_FILE", ".gemini_pro_usage.json")), RPD_LIMIT)
 _API_KEYS = load_api_keys("GEMINI_API_KEYS", "GEMINI_API_KEY")
-_MODELS   = load_models("GEMINI_PRO_MODELS", "GEMINI_PRO_MODEL", "gemini-2.5-pro")
-
-
-# ── 에러 분류 ────────────────────────────────────────────────
-
-def _is_resource_exhausted(e: Exception) -> bool:
-    return "RESOURCE_EXHAUSTED" in str(e) or "quota" in str(e).lower()
-
-
-def _is_model_error(e: Exception) -> bool:
-    msg = str(e).lower()
-    return (
-        "model_not_found" in msg or "model not found" in msg
-        or "deprecated" in msg or "not found" in msg
-        or "invalid_argument" in msg
-    )
+_MODEL    = load_models("GEMINI_PRO_MODELS", "GEMINI_PRO_MODEL", "gemini-2.5-pro")[0]
 
 
 # ── RPD 공개 API ─────────────────────────────────────────────
@@ -66,10 +52,9 @@ def rpd_remaining() -> int:
 
 def get_rpd_status() -> dict:
     return {
-        "keys":          _counter.status(len(_API_KEYS)),
-        "models":        _MODELS,
-        "current_model": _MODELS[_cur_model] if _cur_model < len(_MODELS) else None,
-        "current_key":   _cur_key,
+        "keys":        _counter.status(len(_API_KEYS)),
+        "model":       _MODEL,
+        "current_key": _cur_key,
     }
 
 
@@ -85,9 +70,8 @@ def _get_client(key_idx: int):
     return _clients[key_idx]
 
 
-# ── 세션 로테이션 상태 (절대 후퇴 없음) ──────────────────────
+# ── 세션 키 로테이션 상태 (절대 후퇴 없음) ──────────────────
 
-_cur_model: int = 0
 _cur_key:   int = 0
 _state_lock = threading.Lock()
 
@@ -106,90 +90,61 @@ def _wait_rpm():
 
 def call_gemini_pro(prompt: str) -> str:
     """
-    Gemini Pro 호출. 직접 호출은 thread-safe 하지 않음 — 병렬 환경에서는 call_gemini_pro_serial 사용.
-    키 소진 → 다음 키. 모든 키 소진 → 다음 모델. 모든 조합 소진 → RuntimeError.
+    Gemini Pro 호출 (모델 고정, 키만 로테이션).
+    직접 호출은 thread-safe 하지 않음 — 병렬 환경에서는 call_gemini_pro_serial 사용.
+    RPD 소진 → 즉시 다음 키. RPM 초과 → MAX_RETRIES 재시도 후 다음 키.
+    모든 키 소진 → RuntimeError.
     """
-    global _cur_model, _cur_key, _last_call_time
+    global _cur_key, _last_call_time
 
-    while _cur_model < len(_MODELS):
-        model = _MODELS[_cur_model]
-        _rotate_model_now = False
+    while _cur_key < len(_API_KEYS):
+        key_idx   = _cur_key
+        remaining = _counter.remaining(key_idx)
 
-        while _cur_key < len(_API_KEYS) and not _rotate_model_now:
-            key_idx   = _cur_key
-            remaining = _counter.remaining(key_idx)
+        if remaining <= 0:
+            print(f"  [Gemini] key_{key_idx} RPD 소진 → 다음 키")
+            rotation_log.append({
+                "reason": "rpd_exhausted", "model": _MODEL,
+                "from_key": key_idx, "to_key": key_idx + 1, "ts": now_iso(),
+            })
+            _cur_key += 1
+            continue
 
-            if remaining <= 0:
-                print(f"  [Gemini] key_{key_idx} RPD 소진 → 다음 키")
+        client = _get_client(key_idx)
+        print(f"  [Gemini] {_MODEL} / key_{key_idx} (잔여 RPD: {remaining})")
+
+        for attempt in range(1, MAX_RETRIES + 1):
+            _wait_rpm()
+            try:
+                _last_call_time = time.time()
+                resp = client.models.generate_content(model=_MODEL, contents=prompt)
+                _counter.increment(key_idx)
+                last_call_info.update({"model": _MODEL, "key_idx": key_idx})
+                return resp.text.strip()
+
+            except Exception as e:
+                msg = str(e)
+                is_exhausted = "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()
+
+                if is_exhausted and attempt < MAX_RETRIES:
+                    delay = parse_retry_delay(msg, default=60.0)
+                    print(f"  [Gemini] {_MODEL}/key_{key_idx} 한도 초과 — {delay:.0f}s 대기 ({attempt}/{MAX_RETRIES})")
+                    time.sleep(delay)
+                    continue
+
+                reason = "rpm_retry_exhausted" if is_exhausted else "other_error"
+                print(f"  [Gemini] {_MODEL}/key_{key_idx} → 다음 키: {msg[:80]}")
                 rotation_log.append({
-                    "reason": "rpd_exhausted", "model": model,
-                    "from_key": key_idx, "to_key": key_idx + 1, "ts": now_iso(),
+                    "reason": reason, "model": _MODEL,
+                    "from_key": key_idx, "to_key": key_idx + 1,
+                    "ts": now_iso(), "error": msg[:120],
                 })
                 _cur_key += 1
-                continue
-
-            client = _get_client(key_idx)
-            print(f"  [Gemini] {model} / key_{key_idx} (잔여 RPD: {remaining})")
-
-            for attempt in range(1, MAX_RETRIES + 1):
-                _wait_rpm()
-                try:
-                    _last_call_time = time.time()
-                    resp = client.models.generate_content(model=model, contents=prompt)
-                    _counter.increment(key_idx)
-                    last_call_info.update({"model": model, "key_idx": key_idx})
-                    return resp.text.strip()
-
-                except Exception as e:
-                    if _is_resource_exhausted(e):
-                        delay = parse_retry_delay(str(e), default=60.0)
-                        if attempt < MAX_RETRIES:
-                            print(f"  [Gemini] {model}/key_{key_idx} 한도 초과 — {delay:.0f}s 대기 ({attempt}/{MAX_RETRIES})")
-                            time.sleep(delay)
-                            continue
-                        print(f"  [Gemini] {model}/key_{key_idx} 재시도 {MAX_RETRIES}회 소진 → 다음 키")
-                        rotation_log.append({
-                            "reason": "rpm_retry_exhausted", "model": model,
-                            "from_key": key_idx, "to_key": key_idx + 1,
-                            "ts": now_iso(), "error": str(e)[:120],
-                        })
-                        _cur_key += 1
-                        break
-
-                    elif _is_model_error(e):
-                        next_m = _MODELS[_cur_model + 1] if _cur_model + 1 < len(_MODELS) else None
-                        print(f"  [Gemini] 모델 {model} 사용 불가 → {'다음 모델: ' + next_m if next_m else '없음'}")
-                        rotation_log.append({
-                            "reason": "model_unavailable", "from_model": model,
-                            "to_model": next_m, "ts": now_iso(), "error": str(e)[:120],
-                        })
-                        _rotate_model_now = True
-                        break
-
-                    else:
-                        print(f"  [Gemini] {model}/key_{key_idx} 에러 → 다음 키: {str(e)[:80]}")
-                        rotation_log.append({
-                            "reason": "other_error", "model": model,
-                            "from_key": key_idx, "to_key": key_idx + 1,
-                            "ts": now_iso(), "error": str(e)[:120],
-                        })
-                        _cur_key += 1
-                        break
-
-        next_model = _MODELS[_cur_model + 1] if _cur_model + 1 < len(_MODELS) else None
-        reason_str = "사용 불가" if _rotate_model_now else "모든 키 소진"
-        print(f"  [Gemini] 모델 {model} {reason_str} → {'다음 모델: ' + next_model if next_model else '없음'}")
-        if not _rotate_model_now:
-            rotation_log.append({
-                "reason": "model_rotated", "from_model": model,
-                "to_model": next_model, "ts": now_iso(),
-            })
-        _cur_model += 1
-        _cur_key = 0
+                break
 
     raise RuntimeError(
-        f"Gemini Pro: 모든 모델×키 조합({len(_MODELS)}×{len(_API_KEYS)}) 한도 소진. "
-        f"현황: {get_rpd_status()}"
+        f"Gemini Pro: 모든 키({len(_API_KEYS)}개) 한도 소진. "
+        f"모델: {_MODEL}, 현황: {get_rpd_status()}"
     )
 
 
