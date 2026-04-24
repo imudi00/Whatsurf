@@ -103,12 +103,20 @@ export default function ResultPage() {
           clusters = clusterData?.data?.clusters || clusterData?.clusters || [];
 
           // clusters 배열이 있고, 모든 군집에 요약문(cluster_summary)이 채워졌는지 확인
-          const isAnalysisComplete = clusters.length > 0 && clusters.every(c => c.cluster_summary && c.cluster_summary.length > 0);
+          const isAnalysisComplete = clusters.length > 0 && clusters.some(c => c.cluster_summary && c.cluster_summary.length > 0);
 
           if (isAnalysisComplete) {
-            console.log("✅ 상세 분석(라벨링)까지 모두 완료되었습니다!");
-            break;
+            console.log("✅ 일부 또는 전체 분석 완료! 데이터를 화면에 표시합니다.");
+            
+            // 🚨 중요: 여기서 상태를 확실히 업데이트하고 로딩을 꺼야 합니다.
+            setClusterDetails(clusters); 
+            const total = clusters.reduce((sum, c) => sum + (Number(c.cluster_count) || 0), 0);
+            setTotalArticles(total);
+            setIsLoading(false); // 👈 로딩 스피너 제거
+            break; 
           }
+
+          console.log(`⏳ 서버에서 요약문이 생성되기를 기다리는 중... (시도: ${i})`);
 
           // 아직 요약문이 없다면 루프를 돌며 10초 더 기다림
           console.log(`⏳ 군집은 생성되었으나 상세 분석 대기 중... (시도: ${i}/${maxTries})`);
@@ -119,6 +127,7 @@ export default function ResultPage() {
 
         // 🚨 타임아웃 되거나 백엔드가 죽었을 때 (HDBSCAN 에러 등)
         if (!clusters || clusters.length === 0) {
+          setIsLoading(false);
           console.warn("⚠️ 타임아웃 또는 분석 실패! 더미 데이터를 표시합니다.");
           setTotalArticles(3240);
           setClusterDetails(DUMMY_CLUSTERS);
