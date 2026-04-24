@@ -1,0 +1,30 @@
+# ground_truth.jsonl — 정답 레이블 파일
+# 형식: 한 줄 = JSON 오브젝트 (# 주석 줄은 무시됨)
+#
+# 필드 설명:
+#   id     : article_id (labeled.json의 article_id와 동일)
+#   text   : "제목\n\n본문" (make_annotation_template로 자동 생성)
+#   labels : 수동으로 검토/수정한 피처값
+#
+# labels 필드 유형:
+#   body_depth     : float 0.0~1.0   (0.0=얕음, 1.0=깊음)
+#   frame          : int 1~7
+#                    1=사건원인  2=갈등/대립  3=개인사례
+#                    4=경제영향  5=윤리/도덕  6=안전/안보  7=권리/인권
+#   logic          : int 1~6
+#                    1=정책비난  2=전문가견해  3=피해자서사
+#                    4=파급효과  5=해결책제시  6=사실/정보
+#   bias_x         : float -1.0(진보)~0.0(중립)~+1.0(보수)
+#   bias_y         : float -1.0(감성)~0.0(균형)~+1.0(사실)
+#   omission_risk  : int  -1(low) / 0(mid) / 1(high)
+#   stance_score   : float -1.0(비판적)~0.0(중립)~+1.0(우호적)
+#   loaded_words   : list[str]  ["극우", "재앙", ...]
+#
+# 생성 방법:
+#   python -m labeling.experiments.utils.data_loader \
+#       --labeled_dir labeling/output \
+#       --out labeling/experiments/data/ground_truth.jsonl \
+#       --sample 50
+#   → 자동 생성된 파일에서 labels 값을 직접 수정하여 사용
+#
+{"id": "EXAMPLE_1", "text": "예시 기사 제목\n\n예시 기사 본문입니다. 이 줄을 삭제하고 실제 데이터로 교체하세요.", "labels": {"body_depth": 0.55, "frame": 2, "logic": 6, "bias_x": -0.1, "bias_y": 0.2, "omission_risk": 0, "stance_score": -0.3, "loaded_words": []}}

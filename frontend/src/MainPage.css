@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Gowun+Batang:wght@400;700&family=Pretendard:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-color: #FAFAFA; /* 매우 연한 회색으로 카드를 돋보이게 */
+  --text-main: #111111;
+  --text-sub: #888888;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.editorial-page {
+  font-family: 'Pretendard', sans-serif;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  position: relative; /* 배경 배치를 위해 */
+  overflow-x: hidden;
+}
+
+/* 🌌 [수정] 배경 해결 - 확실하게 티 나는 Mesh 그라데이션 */
+.mesh-gradient-bg {
+  position: absolute; inset: 0;
+  /* 색상 채도를 높이고 투명도를 증가시켜 더 명확하게 보이도록 수정 */
+  background: 
+    radial-gradient(at 10% 10%, rgba(186, 104, 200, 0.3) 0px, transparent 60%), /* 보라, 더 진하게 */
+    radial-gradient(at 90% 10%, rgba(37, 99, 235, 0.3) 0px, transparent 60%),  /* 파랑, 더 진하게 */
+    radial-gradient(at 10% 90%, rgba(76, 175, 80, 0.2) 0px, transparent 60%),   /* 그린, 더 진하게 */
+    radial-gradient(at 90% 90%, rgba(255, 152, 0, 0.2) 0px, transparent 60%);   /* 피치, 더 진하게 */
+  /* 블러를 조금 더 주어 몽환적인 느낌 강화 */
+  filter: blur(120px);
+  z-index: 0; pointer-events: none;
+}
+
+.header, .main-content, .footer { position: relative; z-index: 10; } /* 배경보다 위에 배치 */
+
+/* 1. 헤더 */
+.header { display: flex; justify-content: space-between; align-items: flex-start; padding: 50px 80px 0; }
+.logo { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: -1px; }
+.trending-area { text-align: right; }
+.trend-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-sub); display: block; margin-bottom: 8px; }
+.trend-words { font-size: 0.95rem; font-weight: 500; color: var(--text-main); }
+/* 기존 .trend-words 아래에 이 코드만 추가해 주세요! */
+.trend-clickable { cursor: pointer; transition: color 0.2s; }
+.trend-clickable:hover { color: #888; text-decoration: underline; text-underline-offset: 4px; }
+
+/* 2. 상단 히어로 */
+.hero-section { display: flex; justify-content: space-between; align-items: flex-end; padding: 80px 80px 100px; width: 100%; }
+.hero-left { flex: 1; }
+.mega-text { font-family: 'Space Grotesk', sans-serif; font-size: 6.5rem; font-weight: 700; line-height: 0.9; letter-spacing: -3px; margin: 0; color: var(--text-main); }
+.hero-right { flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; padding-bottom: 10px; }
+.hero-desc { font-family: 'Gowun Batang', serif; font-size: 1.3rem; color: var(--text-main); margin-bottom: 40px; line-height: 1.5; }
+.search-form { width: 100%; max-width: 450px; }
+.search-input-wrapper { display: flex; align-items: center; border-bottom: 2px solid var(--text-main); padding-bottom: 15px; }
+.search-input { flex: 1; border: none; background: transparent; outline: none; font-size: 1.1rem; color: var(--text-main); }
+.search-input::placeholder { color: #ccc; }
+.search-btn { background: none; border: none; font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; cursor: pointer; color: var(--text-main); transition: transform 0.2s; }
+.search-btn:hover { transform: translateX(5px); }
+
+/* 게임 세션 */
+.game-section { width: 100%; padding: 0 80px; margin-bottom: 80px; position: relative; }
+.game-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; padding: 0 10px; }
+.game-title-label { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+.score-area { display: flex; gap: 30px; }
+.score { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; text-transform: uppercase; color: var(--text-sub); }
+.score span { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-left: 10px; }
+
+.game-wrapper { display: flex; height: 500px; border-radius: 24px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 2px solid #fff; }
+.game-panel { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; transition: background-image 0.5s ease-in-out; }
+.panel-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); }
+
+/* 유리 질감 카드 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3); padding: 40px 60px; border-radius: 20px;
+  text-align: center; color: #fff; position: relative; z-index: 10;
+}
+.category-tag { font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 3px; display: block; margin-bottom: 15px; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 5px; }
+.game-keyword { font-family: 'Gowun Batang', serif; font-size: 4rem; font-weight: 700; margin-bottom: 10px; }
+.search-volume { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
+.hide-vol { opacity: 0.3; }
+.vol-status { font-size: 0.9rem; opacity: 0.7; font-weight: 300; }
+
+.vs-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; background: #fff; color: var(--text-main); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+.game-btns { display: flex; gap: 15px; margin-top: 30px; justify-content: center; }
+.action-btn { padding: 12px 35px; background: #fff; color: var(--text-main); border: none; border-radius: 40px; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.action-btn:hover { transform: scale(1.05); }
+.action-btn.outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.6); }
+.action-btn.outline:hover { background: rgba(255,255,255,0.2); }
+
+/* 애니메이션 */
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 4. 푸터 */
+.footer { padding: 40px 80px; display: flex; justify-content: space-between; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-sub); border-top: 1px solid #EAEAEA; }
+
+/* ✅ 세련되게 다듬은 팁 & 로딩바 영역 (우측 정렬 및 각주 스타일) */
+.search-bottom-area { 
+  margin-top: 12px; 
+  width: 100%; 
+  text-align: right; /* 버튼 끝선과 완벽하게 맞춤 */
+  min-height: 20px; 
+}
+
+.search-tip { 
+  font-family: 'Pretendard', sans-serif;
+  font-size: 0.85rem; 
+  font-weight: 300; /* 더 얇고 시크하게 */
+  color: #a0a0a0; /* 눈에 덜 띄는 고급스러운 은회색 */
+  margin: 0; 
+  letter-spacing: 0.5px; 
+}
+
+.elegant-loading { 
+  width: 100%; 
+  height: 1.5px; /* 로딩바도 더 얇고 예민하게 */
+  background: #eaeaea; 
+  position: relative; 
+  overflow: hidden; 
+  margin-top: 8px; 
+}
+
+.progress { 
+  height: 100%; 
+  background: var(--text-main); 
+  width: 0%; 
+  animation: load 1.5s cubic-bezier(0.7, 0, 0.3, 1) forwards; 
+}
+
+@keyframes load { 0% { width: 0%; } 100% { width: 100%; } }

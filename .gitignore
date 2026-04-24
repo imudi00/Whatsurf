@@ -1,10 +1,12 @@
 # --- Backend Settings ---
 # 백엔드 가상환경 (팀원별로 각자 생성 필요)
 whatsurf/
+backend/data_log/
 
 # 파이썬 실행 시 생성되는 캐시 파일
 __pycache__/
 *.pyc
+.hf_cache/
 
 # API 키(네이버, Supabase) 등 보안 파일
 .env
@@ -13,12 +15,39 @@ __pycache__/
 .vscode/
 # ------------------------
 
-
-# --- frontend Settings ---
-# 중간에 작성하면 됨
-# ------------------------
-
-
 # --- AI Settings ---
-# 중간에 작성하면 됨
-# ------------------------
+file/
+AI/data/
+
+# venv
+venv/
+.venv/
+AI/venv/
+AI/.venv/
+
+# Experiment outputs
+experiments/artifacts/
+experiment_log.csv
+
+# Legacy emotion paths (old)
+emotion/artifacts/
+AI_test1/emotion/artifacts/
+
+# New emotion test module outputs
+ai_emotion_test/artifacts/
+ai_emotion_test/**/__pycache__/
+
+# Emotion datasets (do not commit large raw archives)
+data/
+data/emotion/raw/
+data/emotion/*.zip
+data/emotion/*.tar
+data/emotion/*.tar.gz
+data/emotion/*.7z
+
+# timeline generated artifacts
+timeline/experiments/artifacts/
+
+# Labeling output (large, runtime-generated)
+label_results/
+주간학습보고서/
