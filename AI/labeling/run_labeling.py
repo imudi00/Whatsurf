@@ -13,7 +13,8 @@
 
 피처별 처리 담당:
     emotion, stance, loaded_words  → 로컬 HuggingFace (7~13B)
-    frame, logic, bias_x, bias_y  → Groq Llama 3.3 70B
+    frame, logic, bias_x, bias_y  → Groq Llama 3.3 70B  (--llm_provider groq, 기본값)
+                                    또는 Qwen2.5-7B QLoRA (--llm_provider qwen)
     omission_risk                 → Gemini 2.5 Pro (하루 100건)
 
 저장:
@@ -226,50 +227,67 @@ def _run_groq_block(
     features: list[str],
     batch_size: int,
     report: ResearchReport,
+    provider: str = "groq",
 ) -> "dict[str, dict]":
     """
     frame/logic 및 bias 라벨링을 수행하고
     aid → {frame, frame_reason, logic, logic_reason, frame_model_used,
             bias_x, bias_y, bias_rationale, bias_model_used} 매핑을 반환.
+
+    provider: "groq" (기본) 또는 "qwen" (로컬 adapter_call1 사용)
+              bias 는 provider 무관 groq 사용 (call3 미구현)
     """
     t0 = time.time()
     print(f"  [Groq thread] 시작 ({time.strftime('%H:%M:%S')})")
 
     result_map: dict[str, dict] = {}
 
-    # ── 4. Groq 70B: frame / logic ────────────────────────
+    # ── 4. frame / logic (provider 분기) ─────────────────
     if "frame" in features or "logic" in features:
-        print("\n[Groq 70B] frame / logic 라벨링...")
-        from labeling.groq.frame_labeler import label_frame_logic_batch
+        if provider == "qwen":
+            print("\n[Qwen adapter_call1] frame / logic 라벨링...")
+            from labeling.qwen.call1_labeler import label_frame_logic_batch
+            from labeling.qwen.qwen_client import last_call_info as _q_info
 
-        for start in range(0, len(structs), batch_size):
-            batch_structs = structs[start:start+batch_size]
-            batch_ids     = ids[start:start+batch_size]
-            n = len(batch_structs)
+            batch_inputs = [
+                {"title": rows[i]["title"], "body": rows[i].get("body", "")}
+                for i in range(len(rows))
+            ]
+            api_key = "qwen"
+            _get_model_info = lambda: _q_info.get("model", "qwen2.5-7b/call1")
+        else:
+            print("\n[Groq 70B] frame / logic 라벨링...")
+            from labeling.groq.frame_labeler import label_frame_logic_batch
+            from labeling.groq.groq_client import last_call_info as _g_info
+
+            batch_inputs = structs
+            api_key = "groq"
+            _get_model_info = lambda: _g_info.get("model", "")
+
+        for start in range(0, len(batch_inputs), batch_size):
+            batch = batch_inputs[start:start+batch_size]
+            batch_ids = ids[start:start+batch_size]
+            n = len(batch)
 
             with report.time_feature("frame_logic")(n):
                 try:
-                    results = label_frame_logic_batch(batch_structs)
-                    report.record_api_call("groq")
+                    results = label_frame_logic_batch(batch)
+                    report.record_api_call(api_key)
                 except Exception as e:
-                    report.record_retry("groq", str(e))
+                    report.record_retry(api_key, str(e))
                     print(f"  [경고] frame/logic 배치 실패 → 1개씩 재시도: {e}")
                     results = []
-                    for j, single_struct in enumerate(batch_structs):
+                    for j, single in enumerate(batch):
                         try:
-                            res = label_frame_logic_batch([single_struct])
+                            res = label_frame_logic_batch([single])
                             results.append(res[0])
-                            report.record_api_call("groq")
+                            report.record_api_call(api_key)
                         except Exception as e2:
                             print(f"    [경고] 단일 실패 (idx={start+j}): {e2}")
                             results.append({"frame": None, "logic": None,
                                             "frame_reason": "api_error", "logic_reason": "api_error"})
 
-            try:
-                from labeling.groq.groq_client import last_call_info as _g_info
-                _groq_model = _g_info.get("model", "")
-            except Exception:
-                _groq_model = ""
+            _model_used = _get_model_info()
 
             for i, res in enumerate(results):
                 aid = batch_ids[i]
@@ -280,7 +298,7 @@ def _run_groq_block(
                     "frame_reason":      res.get("frame_reason"),
                     "logic":             res["logic"],
                     "logic_reason":      res.get("logic_reason"),
-                    "frame_model_used":  _groq_model,
+                    "frame_model_used":  _model_used,
                 })
                 report.record_labels("frame", [res["frame"]])
                 report.record_labels("logic", [res["logic"]])
@@ -290,11 +308,12 @@ def _run_groq_block(
                     "frame_reason": res.get("frame_reason"),
                     "logic_reason": res.get("logic_reason"),
                 })
-                # fallback 감지
-                if res["frame"] == "인과" and "인과" not in str(structs[start+i].get("judgment_words","")):
-                    report.record_fallback("frame")
-                if res["logic"] == "사실/정보 전달":
-                    report.record_fallback("logic")
+                if provider != "qwen":
+                    # groq 전용 fallback 감지 (struct 기반)
+                    if res["frame"] == "인과" and "인과" not in str(structs[start+i].get("judgment_words", "")):
+                        report.record_fallback("frame")
+                    if res["logic"] == "사실/정보 전달":
+                        report.record_fallback("logic")
 
         print(f"  → {len(texts)}개 완료 (frame/logic)")
 
@@ -462,7 +481,8 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
                  out_dir: str, report: ResearchReport,
                  max_gemini: int = 200,
                  parallel: bool = True,
-                 resume: bool = False):
+                 resume: bool = False,
+                 llm_provider: str = "groq"):
 
     texts  = [f"{r['title']}\n\n{r['body']}" for r in rows]
     ids    = [str(r["id"]) for r in rows]
@@ -610,6 +630,7 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
                 future_groq = executor.submit(
                     _run_groq_block,
                     rows, ids, texts, structs, features, batch_size, report,
+                    llm_provider,
                 )
                 future_gemini = executor.submit(
                     _run_gemini_block,
@@ -627,6 +648,7 @@ def run_labeling(rows: list[dict], features: list[str], batch_size: int,
             if needs_groq:
                 groq_result = _run_groq_block(
                     rows, ids, texts, structs, features, batch_size, report,
+                    llm_provider,
                 )
             if needs_gemini:
                 gemini_result = _run_gemini_block(
@@ -854,6 +876,10 @@ if __name__ == "__main__":
     ap.add_argument("--no_parallel",  action="store_false", dest="parallel",
                     help="Groq/Gemini 병렬 실행 비활성화 (순차 실행)")
     ap.set_defaults(parallel=True)
+    ap.add_argument(
+        "--llm_provider", default="groq", choices=["groq", "gemini", "qwen"],
+        help="frame/logic LLM provider: groq (기본) | qwen (로컬 adapter_call1)",
+    )
     ap.add_argument("--out_dir",     default="./label_results")
     args = ap.parse_args()
 
@@ -878,6 +904,7 @@ if __name__ == "__main__":
     print(f"  limit={args.limit}  offset={args.offset}  batch_size={args.batch_size}")
     print(f"  댓글 배치={args.cmt_batch}  댓글 workers={args.cmt_workers}  댓글 스킵={args.skip_comments}")
     print(f"  max_gemini={args.max_gemini} (0=무제한)  parallel={args.parallel}")
+    print(f"  llm_provider={args.llm_provider}")
     print(f"{'='*60}\n")
 
     # 리포트 초기화
@@ -939,7 +966,8 @@ if __name__ == "__main__":
         run_labeling(rows, features, args.batch_size, args.out_dir, report,
                      max_gemini=args.max_gemini,
                      parallel=args.parallel,
-                     resume=args.resume)
+                     resume=args.resume,
+                     llm_provider=args.llm_provider)
     except Exception as _article_err:
         print(f"\n[경고] 기사 라벨링 중 오류 발생 (댓글 라벨링은 계속 진행):\n  {_article_err}\n")
 
