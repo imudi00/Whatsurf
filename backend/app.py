@@ -36,7 +36,7 @@ import math
 import asyncio
 
 #crawler.py에서 main_crawler 함수를 가져옵니다.
-from crawler import main_crawler
+from backend.crawler import main_crawler
 
 app = FastAPI(title="Whatsurf API Server")
 
@@ -96,19 +96,29 @@ async def run_full_process(query_text: str, query_id: int):
 @app.post("/api/queries")
 async def create_query(request: QueryRequest, background_tasks: BackgroundTasks):
     try:
-        # 1. [DB 저장] queries 테이블에 먼저 데이터를 넣어서 'id'를 발급받습니다.
-        query_data = supabase.table("queries").insert({
-            "query_text": request.query_text,
-            "requested_at": datetime.now().isoformat(),
-            "created_at": datetime.now().isoformat()
-        }).execute()
-        
-        # 발급된 ID와 검색어 추출
-        query_id = query_data.data[0]['id']
-        query_text = query_data.data[0]['query_text']
+        # 기존 쿼리 확인
+        existing = supabase.table("queries") \
+            .select("id, query_text") \
+            .eq("query_text", request.query_text) \
+            .order("id", desc=True) \
+            .limit(1) \
+            .execute()
 
-        # 통합 프로세스 등록
-        background_tasks.add_task(run_full_process, query_text, query_id)
+        if existing.data:
+            # 캐시 있으면 기존 id 반환 (백그라운드 작업 안 함)
+            query_id = existing.data[0]['id']
+            query_text = existing.data[0]['query_text']
+            print(f"--- [캐시 히트] '{query_text}' → id: {query_id} ---")
+        else:
+            # 없으면 새로 생성하고 파이프라인 실행
+            query_data = supabase.table("queries").insert({
+                "query_text": request.query_text,
+                "requested_at": datetime.now().isoformat(),
+                "created_at": datetime.now().isoformat()
+            }).execute()
+            query_id = query_data.data[0]['id']
+            query_text = query_data.data[0]['query_text']
+            background_tasks.add_task(run_full_process, query_text, query_id)
         
         # 3. [응답] 사용자에게는 바로 ID를 돌려줍니다. (수집은 백그라운드에서 진행)
         return {
@@ -183,49 +193,60 @@ async def get_bias_plane(query_id: int):
 @app.get("/api/queries/{query_id}/bias-plane/match")
 async def match_article_by_vector(query_id: int, x: float, y: float):
     try:
-        # 1. article_features 테이블에서 해당 쿼리의 좌표 데이터들을 가져옵니다.
-        # 칼럼명 반영: bias_x, bias_y
-        # 기사 정보(title, url)를 함께 가져오기 위해 articles 테이블과 join하여 조회합니다.
-        res = supabase.table("article_features") \
-            .select("bias_x, bias_y, articles(id, title, url)") \
-            .eq("articles.query_id", query_id) \
+        # 해당 query_id의 article_id 목록 먼저 가져오기
+        articles_res = supabase.table("articles") \
+            .select("id") \
+            .eq("query_id", query_id) \
             .execute()
-        
-        if not res.data:
+
+        if not articles_res.data:
             return {"status": "success", "data": {"matched_article": None}}
 
-        # 2. 유클리드 거리 계산 로직 (가장 가까운 기사 찾기) 
-        # 거리 = sqrt((x2-x1)^2 + (y2-y1)^2)
-        matched_article = None
-        min_distance = float('inf')
+        article_ids = [a["id"] for a in articles_res.data]
 
-        for item in res.data:
-            # article_features의 bias_x, bias_y 사용
-            article_x = item.get("bias_x", 0)
-            article_y = item.get("bias_y", 0)
-            
-            # 입력값(x, y)와의 거리 계산
+        # 해당 article_id들의 bias 값 가져오기
+        features_res = supabase.table("article_features") \
+            .select("bias_x, bias_y, article_id") \
+            .in_("article_id", article_ids) \
+            .execute()
+
+        if not features_res.data:
+            return {"status": "success", "data": {"matched_article": None}}
+
+        # 가장 가까운 article_id 찾기
+        min_distance = float('inf')
+        best_article_id = None
+
+        for item in features_res.data:
+            article_x = item.get("bias_x") or 0
+            article_y = item.get("bias_y") or 0
             distance = math.sqrt((x - article_x)**2 + (y - article_y)**2)
-            
             if distance < min_distance:
                 min_distance = distance
-                # 명세서 응답 형식에 맞게 데이터 재구성 
-                article_info = item.get("articles", {})
-                matched_article = {
-                    "id": article_info.get("id"),
-                    "title": article_info.get("title"),
-                    "url": article_info.get("url"),
-                    "bias_vector1": article_x,
-                    "bias_vector2": article_y,
-                    "distance": round(distance, 4)
-                }
+                best_article_id = item.get("article_id")
 
+        if not best_article_id:
+            return {"status": "success", "data": {"matched_article": None}}
+
+        # title, url 가져오기
+        article_res = supabase.table("articles") \
+            .select("id, title, url") \
+            .eq("id", best_article_id) \
+            .execute()
+
+        if not article_res.data:
+            return {"status": "success", "data": {"matched_article": None}}
+
+        article = article_res.data[0]
         return {
-            "status": "success", 
+            "status": "success",
             "data": {
-                "id": query_id,
-                "input_vector": {"x": x, "y": y},
-                "matched_article": matched_article
+                "matched_article": {
+                    "id": article["id"],
+                    "title": article["title"],
+                    "url": article["url"],
+                    "distance": round(min_distance, 4)
+                }
             }
         }
     except Exception as e:
