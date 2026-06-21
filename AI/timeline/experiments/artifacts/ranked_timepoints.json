@@ -1,0 +1,16 @@
+{
+  "ranked_timepoints": [
+    {
+      "date": "2018-09-01",
+      "TTP": 2,
+      "ETP": 9,
+      "importance": 1.0
+    },
+    {
+      "date": "2018-09-02",
+      "TTP": 1,
+      "ETP": 3,
+      "importance": 0.16666666666666666
+    }
+  ]
+}

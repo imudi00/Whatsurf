@@ -1,0 +1,12 @@
+.env
+backend/.env
+node_modules/
+.hf_cache/
+__pycache__/
+*.pyc
+label_results/
+backend/data_log/
+.gemini_pro_usage.json
+.groq_usage.json
+backend/.gemini_pro_usage.json
+backend/.groq_usage.json
